@@ -3,8 +3,8 @@
     "start:prod": "node ./src",
     "start:dev": "node --require dotenv/config ./src",
     "typeorm": "node --require ts-node/register --require dotenv/config ./node_modules/typeorm/cli.js",
-    "migration:run": "typeorm-ts-node-commonjs migration:run -d migrations/data-source.js",
-    "migration:generate": "typeorm migration:generate ./migrations/migrations/mg1 -d ./migrations/data-source.js"
+    "migration:run": "typeorm migration:run -d migrations/data-source.js",
+    "migration:generate": "typeorm migration:generate ./migrations/migrations/mg1 -d ./migrations/data-source.js -o"
   },
   "moduleResolution": "node",
   "name": "tg-subscription",
