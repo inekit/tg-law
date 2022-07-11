@@ -13,7 +13,7 @@ services:
       options:
         max-size: "50m"
     deploy:
-      replicas: 0
+      replicas: 1
       restart_policy:
         condition: any
       resources:
