@@ -1,19 +1,9 @@
 {
-  "dependencies": {
-    "moment": "^2.29.4",
-    "node": "^16.13.2",
-    "node-cron": "^3.0.1",
-    "pg": "^8.7.3",
-    "svg-captcha": "^1.4.0",
-    "svg-png-converter": "^0.0.9",
-    "telegraf": "^4.8.5",
-    "telegraf-steps-engine": "file:src/se-middlewares",
-    "ts-node": "^10.8.2",
-    "typeorm": "^0.3.6",
-    "typeorm-naming-strategies": "^4.1.0"
-  },
   "scripts": {
-    "migration:run": "npx typeorm-ts-node-commonjs migration:run -d migrations/data-source.js",
+    "start:prod": "node ./src",
+    "start:dev": "node --require dotenv/config ./src",
+    "typeorm": "node --require ts-node/register --require dotenv/config ./node_modules/typeorm/cli.js",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d migrations/data-source.js",
     "migration:generate": "typeorm migration:generate ./migrations/migrations/mg1 -d ./migrations/data-source.js"
   },
   "moduleResolution": "node",
@@ -30,5 +20,21 @@
     "url": "https://gitlab.com/metafora-dev/friends/meta-forest/bot-subscription-checker/issues"
   },
   "homepage": "https://gitlab.com/metafora-dev/friends/meta-forest/bot-subscription-checker#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "moment": "^2.29.4",
+    "node": "^16.13.2",
+    "node-cron": "^3.0.1",
+    "pg": "^8.7.3",
+    "svg-captcha": "^1.4.0",
+    "svg-png-converter": "^0.0.9",
+    "telegraf": "^4.8.5",
+    "telegraf-steps-engine": "file:src/se-middlewares",
+    "ts-node": "^10.8.2",
+    "typeorm": "^0.3.6",
+    "typeorm-naming-strategies": "^4.1.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.1"
+  }
 }
