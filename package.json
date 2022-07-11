@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "start": "npm run migration:run && npm run start:prod",
     "start:prod": "node ./src",
     "migration:run": "typeorm migration:run --dataSource ./migrations/data-source.js",
     "migration:generate": "typeorm migration:generate --dataSource ./migrations/data-source.js --outputJs ./migrations/migrations/mg1",

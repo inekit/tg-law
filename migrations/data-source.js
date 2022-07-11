@@ -11,7 +11,7 @@ const AppDataSource = new DataSource({
     port: process.env.PORT,
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DATABASE,
+    database: process.env.DB_DATABASE,
     entities: [
         User, Admin, Statistics
     ],
