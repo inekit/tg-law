@@ -13,6 +13,10 @@
     "typeorm": "^0.3.6",
     "typeorm-naming-strategies": "^4.1.0"
   },
+  "scripts": {
+    "migration:run": "npx typeorm-ts-node-commonjs migration:run -d migrations/data-source.js",
+    "migration:generate": "typeorm migration:generate ./migrations/migrations/mg1 -d ./migrations/data-source.js"
+  },
   "devDependencies": {
     "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.8",
