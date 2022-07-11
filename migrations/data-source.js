@@ -23,7 +23,7 @@ export const AppDataSource = new DataSource({
         "migrationsDir": "./migrations/migrations"
     },
     "migrationsDir": "./migrations/migrations",
-    logging: false,
+    logging: true,
     namingStrategy: new SnakeNamingStrategy(),
 });
 
