@@ -27,4 +27,4 @@ export const AppDataSource = new DataSource({
     namingStrategy: new SnakeNamingStrategy(),
 });
 
-export default AppDataSource; //.initialize();
+// export default AppDataSource; //.initialize();
