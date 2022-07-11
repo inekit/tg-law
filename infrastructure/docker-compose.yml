@@ -26,7 +26,6 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.http.services.meta-forest-bot-subscription-checker-core.loadbalancer.server.port=3000"
-<<<<<<< HEAD
     environment:
       - DB_DATABASE
       - DB_HOST
@@ -37,9 +36,6 @@ services:
       - CHAT_ID
       - ADD_CHAT_ID
       - PRIVATE_CHAT_ID
-=======
-    # environment:
->>>>>>> main
     networks:
       meta-forest:
         aliases:

@@ -1,10 +1,6 @@
 stages:
   - build
-<<<<<<< HEAD
   - deploy
-=======
-  # - deploy
->>>>>>> main
   - .post
 
 variables:
@@ -19,8 +15,4 @@ variables:
 
 include:
   - local: '/.gitlab-ci/build-core-production.gitlab-ci.yml'
-<<<<<<< HEAD
   - local: '/.gitlab-ci/deploy-production.gitlab-ci.yml'
-=======
-  # - local: '/.gitlab-ci/deploy-production.gitlab-ci.yml'
->>>>>>> main
