@@ -20,7 +20,15 @@ console.log({
 
 import {DataSource, createConnection} from "typeorm";
 
-createConnection({})
+createConnection({
+  type: "postgres",
+  host: DB_HOST,
+  port: DB_PORT,
+  username: DB_USER,
+  password:  DB_PASSWORD,
+  database: DB_DATABASE,
+  logging: true,
+})
   .then(async connection=>{
     console.log('connected');
     console.log(connection);
