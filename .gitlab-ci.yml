@@ -1,0 +1,24 @@
+image: docker:latest
+
+variables:
+  GIT_SUBMODULE_STRATEGY: "recursive"
+
+include:
+  - local: '/.gitlab-ci/project-variables.gitlab-ci.yml'
+  - local: '/.gitlab-ci/production.gitlab-ci.yml'
+    rules:
+      - if: $CI_COMMIT_BRANCH == "main"
+  - local: '/.gitlab-ci/stage.gitlab-ci.yml'
+    rules:
+      - if: $CI_COMMIT_BRANCH =~ "/^stage\//"
+
+post-task:
+  image: docker:dind
+  stage: ".post"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ "/^stage\//"
+  tags:
+    - docker
+  script:
+    - "echo CI_COMMIT_BRANCH: ${CI_COMMIT_BRANCH}"
