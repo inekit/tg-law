@@ -16,4 +16,15 @@ console.log({
   DB_DATABASE,
 });
 
-console.log('process.env',process.env);
+// console.log('process.env',process.env);
+
+import {DataSource, createConnection} from "typeorm";
+
+createConnection({})
+  .then(async connection=>{
+    console.log('connected');
+    console.log(connection);
+  })
+  .catch(error=>{
+    console.error(error);
+  });
