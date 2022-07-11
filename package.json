@@ -1,14 +1,13 @@
 {
   "dependencies": {
     "moment": "^2.29.4",
-    "mysql": "^2.18.1",
     "node": "^16.13.2",
-    "nodejs-captcha": "^0.0.6",
+    "node-cron": "^3.0.1",
     "pg": "^8.7.3",
     "svg-captcha": "^1.4.0",
     "svg-png-converter": "^0.0.9",
     "telegraf": "^4.8.5",
-    "telegraf-steps-engine": "file:src",
+    "telegraf-steps-engine": "file:src/se-middlewares",
     "ts-node": "^10.8.2",
     "typeorm": "^0.3.6",
     "typeorm-naming-strategies": "^4.1.0"
@@ -17,11 +16,19 @@
     "migration:run": "npx typeorm-ts-node-commonjs migration:run -d migrations/data-source.js",
     "migration:generate": "typeorm migration:generate ./migrations/migrations/mg1 -d ./migrations/data-source.js"
   },
-  "devDependencies": {
-    "@babel/cli": "^7.17.6",
-    "@babel/core": "^7.17.8",
-    "@babel/node": "^7.16.8",
-    "@babel/preset-env": "^7.16.11"
+  "moduleResolution": "node",
+  "name": "tg-subscription",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/metafora-dev/friends/meta-forest/bot-subscription-checker.git"
   },
-  "moduleResolution": "Node"
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/metafora-dev/friends/meta-forest/bot-subscription-checker/issues"
+  },
+  "homepage": "https://gitlab.com/metafora-dev/friends/meta-forest/bot-subscription-checker#readme",
+  "description": ""
 }

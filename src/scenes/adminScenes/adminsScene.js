@@ -1,91 +1,37 @@
-const { Telegraf, Composer, Scenes: { WizardScene } } = require('telegraf')
-const titles = require('telegraf-steps-engine/middlewares/titles')
-const moment=require("moment")
+const { Composer, Scenes: { WizardScene } } = require('telegraf')
 const adminIdHandler = new Composer(),
 newIdHandler = new Composer(),
 roleHandler = new Composer();
-const { CustomWizardScene} = require('telegraf-steps-engine');
-const tOrmCon = require("../../db/data-source");
-const authAdmin = require('../../Utils/authAdmin')
-const FilesHandler = require('../../Utils/fileHandler')
 
-const scene = new CustomWizardScene('changeTextScene')
+const scene = new WizardScene('adminsScene', adminIdHandler, newIdHandler, roleHandler)
+
+const tOrmCon = require("../../db/data-source");
 
 scene.enter(async ctx => {
 
     const { edit, main_menu_button } = ctx.scene.state
 
-    const res = await authAdmin(ctx.from.id, true)
-    .catch(()=>{ ctx.answerCbQuery("CANT_AUTH");return ctx.scene.enter('clientScene');})
+    const connection = await tOrmCon
+    ctx.scene.state.admins = 
+     await connection.query(`select a.user_id, a.can_update_admins 
+     from admins a, admins b
+     where b.user_id = $1`,[ctx.from.id])
+     .catch((e)=>{ console.log(e);ctx.answerCbQuery("DB_ERROR") })
 
-    if (!res) { return ctx.scene.enter('clientScene');}
+    if (!ctx.scene.state.admins) return ctx.scene.enter('clientScene')
+    let adminsStr = ctx.scene.state.admins.map(({user_id, can_update_admins})=> `<a href="tg://user?id=${user_id}">${user_id}</a> ${can_update_admins?'Суперадмин':""}`).join("\n\n").toString()
 
-    const keyboard = 'change_text_actions_keyboard'
-    const title = ctx.getTitle("CHANGE_TEXT",[ctx.getTitle("GREETING"), ctx.getTitle("HOME_MENU"), ctx.getTitle("CATEGORY_ADD_TITLE")])
+    const keyboard = 'admins_actions_keyboard'
+    const title = ctx.getTitle("CHOOSE_ADMIN",[adminsStr])
 
     if (main_menu_button) await ctx.replyWithKeyboard('⚙️', main_menu_button)
 
-    //if (edit) return ctx.editMenu(title, keyboard)
-    await ctx.replyWithPhoto(ctx.getTitle('GREETING_PHOTO')).catch(e=>{console.log('no photo to send')})
+    if (edit) return ctx.editMenu(title, keyboard)
     ctx.replyWithKeyboard(title, keyboard)
 })
 
-scene.action(/change\_(.+)/g, ctx=>{
 
-    const type = ctx.match[1];
 
-    switch (type){
-        case 'greeting': {ctx.replyStep(0); break;}
-        case 'card': {ctx.replyStep(3); break;}
-        case 'help': {ctx.replyStep(1); break;}
-        case 'photo': {ctx.replyStep(2); break;}
-
-    }
-})
-
-scene.hears(titles.getTitle('BUTTON_CHANGE_HELP','ru'), ctx=>{
-    ctx.replyStep(1);
-})
-scene.hears(titles.getTitle('BUTTON_CHANGE_PHOTO','ru'), ctx=>{
-    ctx.replyStep(2);
-})
-
-scene
-.addStep({variable: 'greeting_text', type: 'confirm', cb: (ctx=>{
-        ctx.answerCbQuery().catch(console.log);
-
-        ctx.setTitle('GREETING',ctx.scene.state.input?.greeting_text)
-
-        ctx.scene.reenter()
-    })
-})
-.addStep({variable: 'main_text', type: 'confirm', cb: (ctx=>{
-        ctx.answerCbQuery().catch(console.log);
-
-        ctx.setTitle('HOME_MENU',ctx.scene.state.input?.main_text)
-
-        ctx.scene.reenter()
-}   )
-})
-.addStep({
-    variable: 'photo', 
-    type: 'action',
-    handler: new FilesHandler(async ctx=>{
-        ctx.answerCbQuery().catch(console.log);
-
-        ctx.setTitle('GREETING_PHOTO',ctx.scene.state.input?.photo)
-
-        ctx.scene.reenter()
-    })     
-})
-.addStep({variable: 'card_text', type: 'confirm', cb: (ctx=>{
-    ctx.answerCbQuery().catch(console.log);
-
-    ctx.setTitle('CATEGORY_ADD_TITLE',ctx.scene.state.input?.card_text)
-
-    ctx.scene.reenter()
-}   )
-})
 
 scene.action('deleteAdmin', async ctx => {
 
@@ -114,7 +60,7 @@ adminIdHandler.action('confirm', async ctx => {
     if (!res) { return ctx.scene.enter('clientScene');}
 
     const connection = await tOrmCon
-    await connection.getRepository("Admin").delete({userId: ctx.scene.state.deletingId})
+    await connection.getRepository("Admin").delete({user_id: ctx.scene.state.deletingId})
     .then(async ()=>{
         await ctx.answerCbQuery("ADMIN_HAS_BEEN_REMOVED").catch(console.log)
     })
@@ -166,7 +112,7 @@ roleHandler.action('confirm', async ctx=>{
     if (!res) { return ctx.scene.enter('clientScene');}
 
     const connection = await tOrmCon
-    await connection.getRepository("Admin").insert({userId: newId, canUpdateAdmins})
+    await connection.getRepository("Admin").insert({user_id: newId, canUpdateAdmins})
     .then(async ()=>{
         await ctx.answerCbQuery("ADMIN_HAS_BEEN_ADDED").catch(console.log)
     })

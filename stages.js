@@ -1,17 +1,14 @@
 const { Telegraf, Scenes: { Stage }, Composer} = require('telegraf')
 const { titles} = require('telegraf-steps-engine')
-const tOrmCon = require("./db/data-source");
-const stat = require("./Utils/statistics")
+const stat = require("./src/Utils/statistics")
 
 
 const mainStage = new Stage([ 
-	...require('./scenes/mainScene'),
-	require('./scenes/adminScene'),
-
-	require('./scenes/adminScenes/adminsScene'),
-	require('./scenes/adminScenes/changeTextScene'),
-
 	
+	require('./src/scenes/mainScene'),
+	require('./src/scenes/adminScene'),
+	require('./src/scenes/adminScenes/adminsScene'),
+
 ], {default: 'clientScene'})
 
 
@@ -19,7 +16,7 @@ const mainStage = new Stage([
 	console.log(ctx.message.photo)
 })*/
 
-mainStage.on('video_note',ctx=>console.log(ctx.message))
+//mainStage.on('video_note',ctx=>console.log(ctx.message))
 
 mainStage.start(async ctx => {
 	stat.increaseUse(ctx.from?.id).catch(e=>{ctx.replyWithTitle(e.message)})

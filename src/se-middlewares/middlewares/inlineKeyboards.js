@@ -1,7 +1,4 @@
 const { Markup } = require('telegraf')
-//const store = require('../LocalStorage/store')
-//const moment = require('moment')
-const { main_menu_back_keyboard } = require('./keyboards')
 
 const callbackButton = Markup.button.callback
 const urlButton = Markup.button.url

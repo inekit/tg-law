@@ -1,14 +1,10 @@
-const { Telegraf, Composer, Scenes: { WizardScene } } = require('telegraf')
+const { Scenes: { BaseScene } } = require('telegraf')
 
-const { CustomWizardScene, titles} = require('telegraf-steps-engine');
-const { confirmDialog } = require('telegraf-steps-engine/replyTemplates');
+const { titles } = require('telegraf-steps-engine');
 const tOrmCon = require("../db/data-source");
-const {svg2png} = require ('svg-png-converter')
-const svgCaptcha = require('svg-captcha');
-const emptyListener = new Composer();
-
-const captchaListener = new Composer();
-const subscriptionListener = new Composer();
+const generateCaptcha = require("../Utils/generateCaptcha")
+const checkSubscription = require("../Utils/checkSubscription")
+const isCaptchaNeeded = require("../Utils/isCaptchaNeeded")
 require('dotenv').config()
 
 
@@ -32,7 +28,7 @@ async function getUser(ctx){
 
 const getUserName =  (ctx)=> ctx.from?.first_name ?? ctx.from?.username ?? "Друг";
 
-const clientScene = new WizardScene('clientScene', emptyListener, captchaListener, subscriptionListener)
+const clientScene = new BaseScene('clientScene')
 .enter(async ctx=>{
 
     const { edit, isNewUser } = ctx.scene.state
@@ -83,13 +79,11 @@ const clientScene = new WizardScene('clientScene', emptyListener, captchaListene
         })
     }
 
-    //await ctx.replyWithKeyboard(ctx.getTitle("HOME_SYMBOL", [name,userObj?.referals ?? 0, userObj?.privateReferals ?? 0, userObj?.balance ?? 0,  link ]),{name: 'main_keyboard', args: [userObj?.user_id]});
-
     await ctx.replyWithVideoNote(ctx.getTitle('VIDEO_NOTE_ID'));
+
     await ctx.replyWithKeyboard(ctx.getTitle("HOME_MENU_2", 
      [userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ]),
      {name: 'main_keyboard', args: [userObj?.user_id]});
-     //{name: 'subscribe_additional_keyboard', args: [await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)]});
 
 })	
 
@@ -211,7 +205,6 @@ clientScene.action('back', async ctx=>{
 
     ctx.editMenu('ADDITIONAL_TASKS_TITLE', {name: 'subscribe_additional_keyboard', args: [await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)]})
 
-    //return ctx.scene.reenter()
 })
 
 
@@ -231,7 +224,7 @@ clientScene.on('message', async ctx=>{
 
     if (!(await isCaptchaNeeded(ctx))) return;
         
-    if (ctx.message?.text !== ctx.scene.state.captchaAnswer) return ctx.replyWithTitle("WRONG_CAPTCHA")
+    if (ctx.message?.text !== ctx.scene.state.captchaAnswer) { ctx.replyWithTitle("WRONG_CAPTCHA");return sendCaptcha(ctx)}
 
     await connection.query('update users set is_captcha_needed = false where id = $1', [ctx.from?.id])
     .then(res=>{
@@ -260,59 +253,13 @@ clientScene.on('message', async ctx=>{
 
 })
 
-
-
-
-async function isCaptchaNeeded(ctx){
-
-    const connection = await tOrmCon
-
-    return (await connection.query(
-        "SELECT id, is_captcha_needed FROM users u where u.id = $1 limit 1", 
-        [ctx.from?.id])
-    .catch((e)=>{
-        console.log(e)
-        ctx.replyWithTitle("DB_ERROR");
-    }))?.[0]?.['is_captcha_needed']
-}
-
 async function sendCaptcha(ctx){
 
-    var captcha = svgCaptcha.create({size: 4, background: "#ffffff",color: true, noise: 1});
+    const {imgBuffer, answer} = await generateCaptcha()
 
-    const img = await svg2png({ 
-        input: captcha.data, 
-        encoding: 'buffer', 
-        format: 'jpeg',
-        quality: 1,
-        multiplier: 5,
-        enableRetinaScaling: true,
-
-      })
-
-    ctx.scene.state.captchaAnswer = captcha.text;
-
-    console.log(captcha.text)
+    ctx.scene.state.captchaAnswer = answer;
     
-    ctx.replyWithPhoto({ source: img}, {caption: ctx.getTitle('ENTER_CAPTCHA')})
+    ctx.replyWithPhoto({ source: imgBuffer}, {caption: ctx.getTitle('ENTER_CAPTCHA')})
 }
 
-
-
-async function checkSubscription(ctx, groupId){
-
-    const member = await ctx.telegram.getChatMember(groupId, ctx.from.id).catch(console.log);
-
-    console.log(member)
-
-    if (!member) return false;
-
-    if (member.status != "member" && member.status != "administrator" && member.status != "creator" ){
-        return false;
-    } else {
-        return true;
-    }
-    
-}
-
-module.exports = [clientScene]
+module.exports = clientScene

@@ -1,5 +1,5 @@
 const { Composer, Scenes: { BaseScene, WizardScene } } = require('telegraf')
-const titles = require('../src/middlewares/titles')
+const titles = require('telegraf-steps-engine/middlewares/titles')
 const main_menu_button = 'admin_back_keyboard'
 const tOrmCon = require("../db/data-source");
 const noneListener = new Composer(),  addListener = new Composer(), captchaListener = new Composer(),  userIdListener = new Composer();
@@ -116,8 +116,6 @@ addListener.action('confirm', async ctx=>{
 })
 
 adminScene.hears(titles.getValues('BUTTON_ADMINS'), ctx => ctx.scene.enter('adminsScene', { main_menu_button }))
-
-//adminScene.hears(titles.getValues('BUTTON_POINTS'), ctx => ctx.scene.enter('pointAddingScene', { main_menu_button }))
 
 adminScene.hears(titles.getValues('BUTTON_CLIENT_MENU'), ctx => ctx.scene.enter('clientScene'))
 

@@ -3,9 +3,11 @@ const { readFileSync } = require("fs");
 const stages = require("./stages");
 const shortcuts = require("telegraf-steps-engine/shortcuts/shortcuts");
 const middlewares = require("telegraf-steps-engine/middlewares/middlewares");
-const channelListener = require("./scenes/channelListener");
+
+const channelListener = require("./src/Utils/channelListener");
+const Cron = require("./Cron/Cron");
+
 require('dotenv').config()
-//const LocalSession = require('telegraf-session-local')
 
 const allowed_updates = ["message", "callback_query", "chat_member"];
 const TOKEN =
@@ -59,6 +61,8 @@ console.log('started');
             dropPendingUpdates: true,
         });
     }
+
+    new Cron(ctx)
 })();
 
 
