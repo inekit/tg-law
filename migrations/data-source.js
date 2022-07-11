@@ -20,7 +20,7 @@ const AppDataSource = new DataSource({
     ],
     synchronize: false,
     //migrationsTableName: "custom_migration_table",
-    migrations: ["./migrations/migrations/*.ts"],
+    migrations: ["./migrations/migrations/*.js"],
     cli: {
         "migrationsDir": "./migrations/migrations"
     },

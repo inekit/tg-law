@@ -1,4 +1,3 @@
-require('dotenv').config()
 const SnakeNamingStrategy = require('typeorm-naming-strategies')
   .SnakeNamingStrategy;
 
@@ -18,9 +17,8 @@ const AppDataSource = new DataSource({
     synchronize: false,
     logging: false,
     namingStrategy: new SnakeNamingStrategy(),
-})
+});
 
+const connection  = AppDataSource.initialize();
 
-const connection  = AppDataSource.initialize()
-
-module.exports = connection; 
+module.exports = connection;
