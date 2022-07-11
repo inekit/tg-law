@@ -2,8 +2,7 @@
   "name": "db",
   "version": "1.0.0",
   "description": "",
-  "main": "ds.ts",
-  "type": "module",
+  "main": "migration-run.js",
   "scripts": {
     "migration:run": "typeorm migration:run --dataSource ./data-source.js",
     "migration:generate": "typeorm migration:generate --dataSource ./data-source.js --outputJs ./migrations/mg1",

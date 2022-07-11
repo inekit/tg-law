@@ -1,7 +1,7 @@
-//var EntitySchema = require("typeorm").EntitySchema;
-import { EntitySchema } from "typeorm";
-export default new EntitySchema({
-    name: "Admin", 
+const EntitySchema = require("typeorm").EntitySchema;
+
+module.exports = new EntitySchema({
+    name: "Admin",
     tableName: "admins",
     columns: {
         user_id: {

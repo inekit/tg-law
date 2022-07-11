@@ -1,9 +1,7 @@
-//var EntitySchema = require("typeorm").EntitySchema;
-import { EntitySchema } from "typeorm";
-
-export default new EntitySchema({
-    name: "User", 
-    tableName: "users", 
+const  EntitySchema = require("typeorm").EntitySchema;
+module.exports = new EntitySchema({
+    name: "User",
+    tableName: "users",
     columns: {
         id: {
             primary: true,
@@ -38,7 +36,7 @@ export default new EntitySchema({
             nullable: true,
 
         }
-        
+
     },
     relations: {
         referer: {
