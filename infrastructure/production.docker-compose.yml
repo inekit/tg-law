@@ -3,6 +3,7 @@ version: "3.8"
 services:
   core:
     image: "dr.metafora.dev/meta-forest/bot-subscription-checker/core/production:latest"
+<<<<<<< HEAD
     environment:
       - "DB_HOST=172.17.0.1"
       - "DB_USER=meta-forest-bot-subscription-checker"
@@ -12,6 +13,8 @@ services:
       - "CHAT_ID=${META_FOREST_BOT_SUBSCRIPTION_CHECKER_CHAT_ID}"
       - "ADD_CHAT_ID=${META_FOREST_BOT_SUBSCRIPTION_CHECKER_ADD_CHAT_ID}"
       - "PRIVATE_CHAT_ID=${META_FOREST_BOT_SUBSCRIPTION_CHECKER_PRIVATE_CHAT_ID}"
+=======
+>>>>>>> main
     networks:
       metafora:
         aliases:

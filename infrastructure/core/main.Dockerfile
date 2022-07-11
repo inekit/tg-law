@@ -67,7 +67,11 @@ COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
 
 WORKDIR "${APP_PATH}/"
 
+<<<<<<< HEAD
 CMD ["npm","run","start"]
+=======
+CMD ["npm","run","start:prod"]
+>>>>>>> main
 
 LABEL stage="work"
 
