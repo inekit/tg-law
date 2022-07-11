@@ -16,13 +16,13 @@ const {
   DB_DATABASE,
 } = process.env;
 
-console.log({
-  DB_HOST,
-  DB_PORT,
-  DB_USER,
-  DB_PASSWORD,
-  DB_DATABASE,
-});
+// console.log({
+//   DB_HOST,
+//   DB_PORT,
+//   DB_USER,
+//   DB_PASSWORD,
+//   DB_DATABASE,
+// });
 
 export const AppDataSource = new DataSource({
   type: "postgres",
