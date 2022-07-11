@@ -48,4 +48,4 @@ AppDataSource
     console.log('env-test error:',error);
   });
 
-process.exit(0);
+//process.exit(0);

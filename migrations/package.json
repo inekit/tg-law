@@ -7,7 +7,7 @@
   "scripts": {
     "migration:run": "typeorm migration:run --dataSource ./data-source.js",
     "migration:generate": "typeorm migration:generate --dataSource ./data-source.js --outputJs ./migrations/mg1",
-    "debug:env": "node ./env-test"
+    "debug:env": "node ./migration-run"
   },
   "author": "",
   "license": "ISC"
