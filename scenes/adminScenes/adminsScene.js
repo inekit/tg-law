@@ -15,13 +15,13 @@ scene.enter(async ctx => {
 
     const connection = await tOrmCon
     ctx.scene.state.admins = 
-     await connection.query(`select a.userId, a.canUpdateAdmins 
-     from channels.admins a, channels.admins b
-     where b.userId = ?`,[ctx.from.id])
+     await connection.query(`select a.user_id, a.can_update_admins 
+     from admins a, admins b
+     where b.user_id = $1`,[ctx.from.id])
      .catch((e)=>{ console.log(e);ctx.answerCbQuery("DB_ERROR") })
 
     if (!ctx.scene.state.admins) return ctx.scene.enter('clientScene')
-    let adminsStr = ctx.scene.state.admins.map(({userId, canUpdateAdmins})=> `<a href="tg://user?id=${userId}">${userId}</a> ${canUpdateAdmins?'Суперадмин':""}`).join("\n\n").toString()
+    let adminsStr = ctx.scene.state.admins.map(({user_id, can_update_admins})=> `<a href="tg://user?id=${user_id}">${user_id}</a> ${can_update_admins?'Суперадмин':""}`).join("\n\n").toString()
 
     const keyboard = 'admins_actions_keyboard'
     const title = ctx.getTitle("CHOOSE_ADMIN",[adminsStr])
@@ -62,7 +62,7 @@ adminIdHandler.action('confirm', async ctx => {
     if (!res) { return ctx.scene.enter('clientScene');}
 
     const connection = await tOrmCon
-    await connection.getRepository("Admin").delete({userId: ctx.scene.state.deletingId})
+    await connection.getRepository("Admin").delete({user_id: ctx.scene.state.deletingId})
     .then(async ()=>{
         await ctx.answerCbQuery("ADMIN_HAS_BEEN_REMOVED").catch(console.log)
     })
@@ -114,7 +114,7 @@ roleHandler.action('confirm', async ctx=>{
     if (!res) { return ctx.scene.enter('clientScene');}
 
     const connection = await tOrmCon
-    await connection.getRepository("Admin").insert({userId: newId, canUpdateAdmins})
+    await connection.getRepository("Admin").insert({user_id: newId, canUpdateAdmins})
     .then(async ()=>{
         await ctx.answerCbQuery("ADMIN_HAS_BEEN_ADDED").catch(console.log)
     })

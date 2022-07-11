@@ -4,12 +4,12 @@ module.exports = new EntitySchema({
     name: "Admin", 
     tableName: "admins",
     columns: {
-        userId: {
+        user_id: {
             type: "bigint",
             primary: true,
         },
-        canUpdateAdmins: {
-            type: "tinyint",
+        can_update_admins: {
+            type: "boolean",
             default: false,
         }
     },

@@ -38,25 +38,28 @@ exports.custom_botkeyboard = (ctx, registered) => {
 	return Markup.keyboard(buttons).resize()
 }
 
-exports.main_menu_bottom_keyboard = (ctx, isAdmin) => {
+exports.main_menu_admin_keyboard = (ctx) => {
 
-	const buttons = [
-		[ 
-			ctx.getTitle('BUTTON_RANDOM'),
-		],
-		[ 
-			ctx.getTitle('BUTTON_CATEGORIES'),
-		],
-		[ 
-			ctx.getTitle('BUTTON_BACK_USER'),
-		],
-	]
-
-	if (isAdmin) buttons.push([ctx.getTitle('ADMIN_SCENE_BUTTON')])
+	const buttons = [[ctx.getTitle('ADMIN_SCENE_BUTTON')]];
 
 	return Markup.keyboard(buttons).resize()
 }
 
+exports.main_keyboard = (ctx,isAdmin) => {
+
+	const buttons = [
+		[ctx.getTitle('BUTTON_BACK_USER')],
+		[ctx.getTitle('BUTTON_ADDITIONAL_TASKS')],
+		[ctx.getTitle('BUTTON_RULES')],
+		[ctx.getTitle('BUTTON_FREE_NFT')],
+	]
+
+    if (isAdmin) buttons.push([ 
+		ctx.getTitle('ADMIN_SCENE_BUTTON')
+	])
+
+	return Markup.keyboard(buttons).resize()
+} 
 
 
 
@@ -77,19 +80,9 @@ exports.categories_list_keyboard_bottom = (ctx, data, totalStr) => {
 
 
 
+exports.i_subscribed_keyboard = (ctx) => Markup.keyboard([
 
-
-exports.pay_agent_keyboard = (ctx) => Markup.keyboard([
-
-	ctx.getTitle('BUTTON_PAY_AGENT_SUBSCRIPTION'),
-	ctx.getTitle('BUTTON_CHOOSE_ROLE'),
-
-], { columns: 1 }).resize()
-
-exports.pay_alpinist_keyboard = (ctx) => Markup.keyboard([
-
-	ctx.getTitle('BUTTON_PAY_ALPINIST_SUBSCRIPTION'),
-	ctx.getTitle('BUTTON_CHOOSE_ROLE'),
+	ctx.getTitle('I_SUBSCRIBED'),
 
 ], { columns: 1 }).resize()
 
@@ -97,10 +90,10 @@ exports.pay_alpinist_keyboard = (ctx) => Markup.keyboard([
 exports.admin_main_keyboard = ctx=>Markup.keyboard([
 
 	[
-		ctx.getTitle('BUTTON_CATEGORIES'),		
+		ctx.getTitle('BUTTON_ADD'),		
 	],
 	[
-		ctx.getTitle('BUTTON_CHANGE_TEXT'),
+		ctx.getTitle('BUTTON_CAPTCHA'),		
 	],
 	[ 
 		ctx.getTitle('BUTTON_CLIENT_MENU'),
@@ -112,13 +105,13 @@ exports.admin_main_keyboard_owner = ctx =>
  Markup.keyboard([
 
 	[
-		ctx.getTitle('BUTTON_CATEGORIES'),		
+		ctx.getTitle('BUTTON_ADD'),		
+	],
+	[
+		ctx.getTitle('BUTTON_CAPTCHA'),		
 	],
 	[
 		ctx.getTitle('BUTTON_ADMINS')
-	],
-	[
-		ctx.getTitle('BUTTON_CHANGE_TEXT'),
 	],
 	[ 
 		ctx.getTitle('BUTTON_CLIENT_MENU'),

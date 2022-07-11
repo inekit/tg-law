@@ -1,12 +1,11 @@
-const { _resolveUrl } = require("elasticsearch/src/lib/client_action");
 const tOrmCon = require("../db/data-source");
 
 
-module.exports = (tgId, canUpdateAdmins)=>new Promise(async (resolve, reject)=>{
+module.exports = (tgId, can_update_admins)=>new Promise(async (resolve, reject)=>{
     if (!tgId) throw new Error('no tg id')
     const connection = await tOrmCon
     connection.getRepository("Admin")
-    .findOne({where: {userId: tgId, canUpdateAdmins}})
+    .findOne({where: {user_id: tgId, can_update_admins}})
     .then(res=>{
         console.log(res)
         if (res) return resolve(res, connection)

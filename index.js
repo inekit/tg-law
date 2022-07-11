@@ -3,6 +3,7 @@ const { readFileSync } = require("fs");
 const stages = require("./stages");
 const shortcuts = require("telegraf-steps-engine/shortcuts/shortcuts");
 const middlewares = require("telegraf-steps-engine/middlewares/middlewares");
+const channelListener = require("./scenes/channelListener");
 require('dotenv').config()
 //const LocalSession = require('telegraf-session-local')
 
@@ -22,7 +23,7 @@ console.log('started');
 
     const ctx = {...bot.context, telegram: bot.telegram };
 
-    bot.use(session(),
+    bot.use(channelListener, session(),
         /*(new LocalSession({ 
            database: 'PublicStorage/sessions.json',
            storage: LocalSession.storageFileAsync,

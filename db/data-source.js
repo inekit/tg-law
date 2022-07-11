@@ -1,9 +1,10 @@
-var typeorm = require("typeorm");
 require('dotenv').config()
+const SnakeNamingStrategy = require('typeorm-naming-strategies')
+  .SnakeNamingStrategy;
 
 let {DataSource, createConnection} = require("typeorm");
 const AppDataSource = new DataSource({
-    type: "mysql",
+    type: "postgres",
     host: "127.0.0.1",
     port: process.env.PORT,
     username: process.env.DB_USER,
@@ -11,16 +12,15 @@ const AppDataSource = new DataSource({
     database: process.env.DATABASE,
     entities: [
         require("./entity/User"),
-        require("./entity/Category"),
-        require("./entity/Channel"),
         require("./entity/Admin"),
         require("./entity/Statistics")
     ],
-    synchronize: true,
+    synchronize: false,
     logging: false,
+    namingStrategy: new SnakeNamingStrategy(),
 })
 
 
-const connection  = AppDataSource.initialize();
+const connection  = AppDataSource.initialize()
 
-module.exports = connection;
+module.exports = connection; 

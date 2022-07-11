@@ -3,94 +3,316 @@ const { Telegraf, Composer, Scenes: { WizardScene } } = require('telegraf')
 const { CustomWizardScene, titles} = require('telegraf-steps-engine');
 const { confirmDialog } = require('telegraf-steps-engine/replyTemplates');
 const tOrmCon = require("../db/data-source");
-const store = require('../store')
+const {svg2png} = require ('svg-png-converter')
+const svgCaptcha = require('svg-captcha');
+const emptyListener = new Composer();
 
-const clientScene = new CustomWizardScene('clientScene')
-.enter(async ctx=>{
+const captchaListener = new Composer();
+const subscriptionListener = new Composer();
+require('dotenv').config()
 
-    const { edit } = ctx.scene.state
 
+async function getUser(ctx){
     const connection = await tOrmCon
 
     let userObj = (await connection.query(
-            "SELECT id, DATEDIFF(now(),u.lastUse) loginAgo,userId FROM channels.users u left join channels.admins a on a.userId = u.id where u.id = ? limit 1", 
-            [ctx.from?.id])
-        .catch((e)=>{
-            console.log(e)
-            ctx.replyWithTitle("DB_ERROR")
-        }))
+        `SELECT u.id, DATE_PART('day', now() - u.last_use) login_ago,user_id, u.is_captcha_needed, count(u2.id) referals, u.is_subscribed, count(u2.is_subscribed_private::int) private_referals, count(u2.is_subscribed::int)*5+count(u2.is_subscribed_private::int)*50 +u.is_subscribed_private::int*100 balance
+        FROM users u left join users u2 on u.id = u2.referer_id
+        left join admins a on a.user_id = u.id where u.id = $1 
+        group by u.id,  a.user_id
+        limit 1;`, 
+        [ctx.from?.id])
+    .catch((e)=>{
+        console.log(e)
+        ctx.replyWithTitle("DB_ERROR")
+    }))
 
-        ctx.scene.state.userObj = userObj = userObj?.[0]
+    return userObj?.[0]
+}
+
+const getUserName =  (ctx)=> ctx.from?.first_name ?? ctx.from?.username ?? "Друг";
+
+const clientScene = new WizardScene('clientScene', emptyListener, captchaListener, subscriptionListener)
+.enter(async ctx=>{
+
+    const { edit, isNewUser } = ctx.scene.state
+    
+    let userObj = ctx.scene.state.userObj = await getUser(ctx);
+
+    const name = getUserName(ctx);
+
+    const link = `https://t.me/METABUNNY_bot/?start=botuser-${ctx?.from?.id}`
+
+    const connection = await tOrmCon
 
     if (!userObj) {
 
-        await ctx.replyWithPhoto(ctx.getTitle('GREETING_PHOTO'), {caption: ctx.getTitle("GREETING")}).catch(async e=>{
-            console.log('no photo to send');
-            await ctx.replyWithTitle("GREETING");
-        })
+        const referer_id = ctx.startPayload?.split("-")[1];
+
+        if (parseInt(referer_id)===ctx.from?.id) referer_id = undefined
         
         userObj = await connection.getRepository("User")
-        .save({id: ctx.from.id})
+        .save({id: ctx.from.id, referer_id, is_subscribed: await checkSubscription(ctx, process.env.CHAT_ID)})
         .catch((e)=>{
             console.log(e)
             ctx.replyWithTitle("DB_ERROR")
         })
     }
 
-    if (userObj?.userId) {}// await ctx.replyWithKeyboard("#", {name: 'main_menu_bottom_keyboard', args: [true]})
+
+    if (userObj?.is_captcha_needed) return await sendCaptcha(ctx);
+
+    if (!await checkSubscription(ctx, process.env.CHAT_ID)) return await ctx.replyWithKeyboard(ctx.getTitle("GREETING", [name]),'i_subscribed_keyboard')
+
+    setTimeout(async ()=>{
+        if (!await checkSubscription(ctx, process.env.CHAT_ID)) await ctx.replyWithKeyboard("NOT_SUBSCRIBED",'i_subscribed_keyboard')
+    }, 60000)
+
+
+    if (userObj?.user_id) {
+    }
     else if (userObj?.loginAgo!=="0") {
+
+
         await connection.query(
-            "UPDATE channels.users u SET lastUse = now() WHERE id = ?", 
+            "UPDATE users u SET last_use = now() WHERE id = $1", 
             [ctx.from?.id])
         .catch((e)=>{
             console.log(e)
             ctx.replyWithTitle("DB_ERROR")
         })
     }
-    //console.log(store.getAllRandomLink())
-    const keyboard =  'main_menu_keyboard'//{name: 'main_menu_keyboard', args: [store.getAllRandomLink(),userObj?.userId]};
-    if (edit && !userObj?.userId) return ctx.editMenu("HOME_MENU",{name: 'main_menu_bottom_keyboard', args: [userObj?.userId]})
-    await ctx.replyWithKeyboard("HOME_MENU",{name: 'main_menu_bottom_keyboard', args: [userObj?.userId]})
-    
-    
+
+    //await ctx.replyWithKeyboard(ctx.getTitle("HOME_SYMBOL", [name,userObj?.referals ?? 0, userObj?.privateReferals ?? 0, userObj?.balance ?? 0,  link ]),{name: 'main_keyboard', args: [userObj?.user_id]});
+
+    await ctx.replyWithVideoNote(ctx.getTitle('VIDEO_NOTE_ID'));
+    await ctx.replyWithKeyboard(ctx.getTitle("HOME_MENU_2", 
+     [userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ]),
+     {name: 'main_keyboard', args: [userObj?.user_id]});
+     //{name: 'subscribe_additional_keyboard', args: [await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)]});
+
 })	
 
+clientScene.hears(titles.getTitle('BUTTON_RULES','ru'), async ctx=>{
 
+    const name = ctx.from?.first_name ?? ctx.from?.username ?? "Друг";
 
-clientScene.action('hide', async ctx => {
-    ctx.answerCbQuery().catch(console.log);
-    ctx.scene.reenter({edit: true})
+    ctx.replyWithTitle('RULES_TITLE', [name])
+})
+
+clientScene.hears(titles.getTitle('BUTTON_FREE_NFT','ru'), async ctx=>{
+
+    ctx.replyWithPhoto(ctx.getTitle("FREE_NFT_PHOTO"), {caption: ctx.getTitle('FREE_NFT_TITLE'), parse_mode: "HTML"}).catch(e=>{
+       ctx.replyWithTitle('FREE_NFT_TITLE')
+    });
+})
+
+clientScene.hears(titles.getTitle('BUTTON_ADDITIONAL_TASKS','ru'), async ctx=>{
+
+    ctx.replyWithKeyboard('ADDITIONAL_TASKS_TITLE', {name: 'subscribe_additional_keyboard', args: [await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)]})
+})
+
+clientScene.action('subscribeAdd', async ctx=>{
+    await ctx.answerCbQuery().catch(console.log);
+
+    ctx.editMenu('SUBSCRIBE_ADD_TITLE', {name: 'url_check_keyboard', args: ['LINK_PRIVATE']})
+})
+
+clientScene.action('subscribePrivate', async ctx=>{
+    await ctx.answerCbQuery().catch(console.log);
+
+    ctx.editMenu('SUBSCRIBE_PRIVATE_TITLE', {name: 'url_check_keyboard', args: ['LINK_ADD']})
 })
 
 
-clientScene.hears(titles.getTitle('CATALOG_BUTTON','ru'), ctx=>{
+clientScene.action(/^i_subscribed_(.+)$/g, async ctx=>{
+
+
+    const connection = await tOrmCon
+
+    if (ctx.match?.[1]===ctx.getTitle('LINK_ADD')) {
+
+        console.log(1)
+
+
+        if (!await checkSubscription(ctx, process.env.ADD_CHAT_ID)) 
+         return await ctx.answerCbQuery(ctx.getTitle("NOT_SUBSCRIBED_CB")).catch(console.log);;
+
+        await connection.query(
+            "UPDATE users u SET is_subscribed_add = true WHERE id = $1", 
+            [ctx.from?.id])
+        .catch((e)=>{
+            console.log(e)
+            ctx.replyWithTitle("DB_ERROR")
+        })
+
+        await ctx.answerCbQuery(ctx.getTitle("SUBSCRIBED_CB")).catch(console.log);
+    }
+
+    if (!await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)) 
+     return await ctx.answerCbQuery(ctx.getTitle("NOT_SUBSCRIBED_PRIVATE_CB")).catch(console.log);;
+
+    await connection.query(
+        "UPDATE users u SET is_subscribed_private = true WHERE id = $1", 
+        [ctx.from?.id])
+    .catch((e)=>{
+        console.log(e)
+        ctx.replyWithTitle("DB_ERROR")
+    })
+
+    await ctx.answerCbQuery(ctx.getTitle("SUBSCRIBED_PRIVATE_CB")).catch(console.log);
+    return ctx.scene.reenter()
     
-    ctx.scene.enter('catalogScene', )//.catch(e=>ctx.replyWithTitle(`Нет такой сцены`));
-})
-
-clientScene.action('categories',ctx=>{
-    ctx.answerCbQuery().catch(console.log);
-
-    ctx.scene.enter('catalogScene', {edit: true});
-})
-clientScene.action('admin_menu',ctx=>{
-    ctx.answerCbQuery().catch(console.log);
-
-    ctx.scene.enter('adminScene', {edit: true});
 })
 
 
+clientScene.hears(titles.getTitle('I_SUBSCRIBED','ru'), async ctx=>{
 
-clientScene.hears(titles.getTitle('BUTTON_RANDOM','ru'), ctx=>{
-    ctx.scene.enter('catalogScene', {edit: false, random: true});
+    const connection = await tOrmCon
+
+    if (!await checkSubscription(ctx, process.env.CHAT_ID)) return ctx.replyWithTitle("NOT_SUBSCRIBED");
+
+    await connection.query(
+        "UPDATE users u SET is_subscribed = true WHERE id = $1", 
+        [ctx.from?.id])
+    .catch((e)=>{
+        console.log(e)
+        ctx.replyWithTitle("DB_ERROR")
+    })
+
+    const userObj = ctx.scene.state.userObj;
+
+    const name = getUserName(ctx);
+
+    const link = `https://t.me/METABUNNY_bot/?start=botuser-${ctx?.from?.id}`
+
+    return await ctx.replyWithKeyboard(ctx.getTitle("HOME_MENU_GREETING", [name,userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ]),{name: 'main_keyboard', args: [userObj?.user_id]});
+
 })
 
-clientScene.hears(titles.getTitle('BUTTON_CATEGORIES','ru'), ctx=>{
-    ctx.scene.enter('catalogScene', {edit: false});
+clientScene.hears(titles.getTitle('I_SUBSCRIBED_PRIVATE','ru'), async ctx=>{
+
+    const connection = await tOrmCon
+
+    if (!await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)) return ctx.replyWithTitle("NOT_SUBSCRIBED_PRIVATE");
+
+    await connection.query(
+        "UPDATE users u SET is_subscribed_private = true WHERE id = $1", 
+        [ctx.from?.id])
+    .catch((e)=>{
+        console.log(e)
+        ctx.replyWithTitle("DB_ERROR")
+    })
+    return ctx.scene.reenter()
 })
+
+clientScene.action('back', async ctx=>{
+    await ctx.answerCbQuery().catch(console.log);
+
+    ctx.editMenu('ADDITIONAL_TASKS_TITLE', {name: 'subscribe_additional_keyboard', args: [await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)]})
+
+    //return ctx.scene.reenter()
+})
+
+
+
 
 clientScene.hears(titles.getTitle('ADMIN_SCENE_BUTTON','ru'), ctx=>{
-    ctx.scene.enter('adminScene')//.catch(e=>ctx.replyWithTitle(`Нет такой сцены`));
+    ctx.scene.enter('adminScene').catch(e=>ctx.replyWithTitle(`Нет такой сцены`));
 })
+
+
+
+
+clientScene.on('message', async ctx=>{
+
+    const connection = await tOrmCon
+
+
+    if (!(await isCaptchaNeeded(ctx))) return;
+        
+    if (ctx.message?.text !== ctx.scene.state.captchaAnswer) return ctx.replyWithTitle("WRONG_CAPTCHA")
+
+    await connection.query('update users set is_captcha_needed = false where id = $1', [ctx.from?.id])
+    .then(res=>{
+        ctx.replyWithTitle('CAPTCHA_SUCCESS');
+    })
+    .catch(e=>{
+        console.log(e)
+        ctx.replyWithTitle('DB_ERROR');
+    
+    })
+
+    if (checkSubscription(ctx, process.env.CHAT_ID)) {
+
+        const userObj = ctx.scene.state.userObj;
+        
+        const name = getUserName(ctx);
+
+        const link = `https://t.me/METABUNNY_bot/?start=botuser-${ctx?.from?.id}`
+        
+        return await ctx.replyWithKeyboard(ctx.getTitle("HOME_MENU_GREETING", [name,userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ]),{name: 'main_keyboard', args: [userObj?.user_id]});
+
+    }
+
+    return ctx.scene.reenter();
+
+
+})
+
+
+
+
+async function isCaptchaNeeded(ctx){
+
+    const connection = await tOrmCon
+
+    return (await connection.query(
+        "SELECT id, is_captcha_needed FROM users u where u.id = $1 limit 1", 
+        [ctx.from?.id])
+    .catch((e)=>{
+        console.log(e)
+        ctx.replyWithTitle("DB_ERROR");
+    }))?.[0]?.['is_captcha_needed']
+}
+
+async function sendCaptcha(ctx){
+
+    var captcha = svgCaptcha.create({size: 4, background: "#ffffff",color: true, noise: 1});
+
+    const img = await svg2png({ 
+        input: captcha.data, 
+        encoding: 'buffer', 
+        format: 'jpeg',
+        quality: 1,
+        multiplier: 5,
+        enableRetinaScaling: true,
+
+      })
+
+    ctx.scene.state.captchaAnswer = captcha.text;
+
+    console.log(captcha.text)
+    
+    ctx.replyWithPhoto({ source: img}, {caption: ctx.getTitle('ENTER_CAPTCHA')})
+}
+
+
+
+async function checkSubscription(ctx, groupId){
+
+    const member = await ctx.telegram.getChatMember(groupId, ctx.from.id).catch(console.log);
+
+    console.log(member)
+
+    if (!member) return false;
+
+    if (member.status != "member" && member.status != "administrator" && member.status != "creator" ){
+        return false;
+    } else {
+        return true;
+    }
+    
+}
 
 module.exports = [clientScene]

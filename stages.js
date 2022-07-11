@@ -8,10 +8,7 @@ const mainStage = new Stage([
 	...require('./scenes/mainScene'),
 	require('./scenes/adminScene'),
 
-	require('./scenes/userScenes/catalogScene'),
-
 	require('./scenes/adminScenes/adminsScene'),
-	require('./scenes/adminScenes/categoriesScene'),
 	require('./scenes/adminScenes/changeTextScene'),
 
 	
@@ -21,6 +18,8 @@ const mainStage = new Stage([
 /*mainStage.on('photo',ctx=>{
 	console.log(ctx.message.photo)
 })*/
+
+mainStage.on('video_note',ctx=>console.log(ctx.message))
 
 mainStage.start(async ctx => {
 	stat.increaseUse(ctx.from?.id).catch(e=>{ctx.replyWithTitle(e.message)})
