@@ -29,7 +29,7 @@ createConnection({
 })
   .then(async connection=>{
     console.log('connected');
-    console.log(connection);
+    // console.log(connection);
   })
   .catch(error=>{
     console.error(error);
