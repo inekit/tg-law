@@ -37,7 +37,7 @@ import console from 'node:console';
 //   });
 
 
-import { AppDataSource } from  './data-source';
+import { AppDataSource } from  './data-source.js';
 
 AppDataSource
   .runMigrations()
