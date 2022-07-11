@@ -10,7 +10,7 @@ import Statistics from "./entity/Statistics.js";
 import {DataSource, createConnection} from "typeorm";
 const AppDataSource = new DataSource({
     type: "postgres",
-    host: "127.0.0.1",
+    host: process.env.DB_HOST,
     port: process.env.PORT,
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
