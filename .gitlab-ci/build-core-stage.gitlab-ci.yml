@@ -1,4 +1,4 @@
-build-bot-stage:
+build-core-stage:
   image: docker:dind
   stage: build
   tags:
