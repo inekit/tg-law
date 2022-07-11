@@ -40,7 +40,9 @@ import { AppDataSource } from  './data-source';
 
 AppDataSource
   .runMigrations()
-  .then()
+  .then((data)=>{
+    console.lg('runMigrations data', data);
+  })
   .catch(error=>{
     console.log('env-test error:',error);
   });
