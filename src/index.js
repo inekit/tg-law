@@ -4,7 +4,7 @@ const stages = require("./stages");
 const shortcuts = require("telegraf-steps-engine/shortcuts/shortcuts");
 const middlewares = require("telegraf-steps-engine/middlewares/middlewares");
 
-const channelListener = require("./src/Utils/channelListener");
+const channelListener = require("./Utils/channelListener");
 const Cron = require("./Cron/Cron");
 
 require('dotenv').config()
@@ -33,7 +33,15 @@ console.log('started');
          })).middleware(),*/
         stages);
 
-    if ("process.env.NODE_ENV']" === "production") {
+    await bot.launch({
+        allowedUpdates: allowed_updates,
+        dropPendingUpdates: true,
+    });
+
+    new Cron(ctx)
+
+    /*
+    if (process.env.NODE_ENV === "production") {
         bot.catch(console.error);
 
         await bot.startWebhook(`/bot`, 
@@ -54,15 +62,10 @@ console.log('started');
              drop_pending_updates: true,
            }
          );
-         console.log('webhook is set')'*/
-    } else {
-        await bot.launch({
-            allowedUpdates: allowed_updates,
-            dropPendingUpdates: true,
-        });
+         console.log('webhook is set')'
     }
+    */
 
-    new Cron(ctx)
 })();
 
 

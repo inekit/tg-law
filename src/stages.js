@@ -1,13 +1,13 @@
 const { Telegraf, Scenes: { Stage }, Composer} = require('telegraf')
 const { titles} = require('telegraf-steps-engine')
-const stat = require("./src/Utils/statistics")
+const stat = require("./Utils/statistics")
 
 
 const mainStage = new Stage([ 
 	
-	require('./src/scenes/mainScene'),
-	require('./src/scenes/adminScene'),
-	require('./src/scenes/adminScenes/adminsScene'),
+	require('./scenes/mainScene'),
+	require('./scenes/adminScene'),
+	require('./scenes/adminScenes/adminsScene'),
 
 ], {default: 'clientScene'})
 

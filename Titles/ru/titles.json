@@ -29,7 +29,7 @@
   "BUTTON_SUBSCRIBE_ADD": "Дополнительный чат - 5 б",
   "BUTTON_CHECK_SUBSCRIBE": "Я подписался",
   "SUBSCRIBE_ADD_TITLE": "Подпишись на чат и получи 5 баллов",
-  "LINK_ADD": "https://t.me/METAFORESTworldruschat",
+  "LINK_ADD": "https://t.me/tonforestchat",
   "LINK_NAME": "Перейти",
   "ADMIN_SCENE_BUTTON": "К меню администратора",
   "ADMIN_KB_TITLE": "Вы администратор бота",
@@ -68,5 +68,7 @@
   "🐰": "🐰",
   "FREE_NFT_PHOTO": "AgACAgIAAxkBAAIEnWLKzEUky7HHootnUd8kmYmRpyZyAAJRvjEb3n5YSkiVsGlLm_NsAQADAgADeAADKQQ",
   "VIDEO_NOTE_ID": "DQACAgIAAxkBAAIErWLKzSJe4LbQ8e4hvaL-mwJZf94ZAAKJGgAC3n5YShDvTtJ1hrw_KQQ",
-  "NOT_SUBSCRIBED_CB": "Вы не подписались"
+  "NOT_SUBSCRIBED_CB": "Вы не подписались",
+  "SUBSCRIBED_CB": "SUBSCRIBED_CB",
+  "NOT_SUBSCRIBED_PRIVATE_CB": "NOT_SUBSCRIBED_PRIVATE_CB"
 }

@@ -1,5 +1,5 @@
 const cron = require('node-cron')
-const tOrmCon = require("../src/db/data-source");
+const tOrmCon = require("../db/data-source");
 
 module.exports = class Cron {
 

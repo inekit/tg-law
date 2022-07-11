@@ -21,9 +21,11 @@ exports.url_check_keyboard = (ctx, linkTitle ) => {
 
 exports.subscribe_additional_keyboard = (ctx, subscribedPrivate ) => {
 
-    const keyboard = inlineKeyboard([
+    const keyboard = inlineKeyboard([], { columns: 1 })
+
+    /*const keyboard = inlineKeyboard([
         callbackButton(ctx.getTitle("BUTTON_SUBSCRIBE_ADD"), 'subscribeAdd'),
-    ], { columns: 1 })
+    ], { columns: 1 })*/
 
     if (!subscribedPrivate) keyboard.reply_markup.inline_keyboard.push([callbackButton(ctx.getTitle("BUTTON_SUBSCRIBE_PRIVATE"), 'subscribePrivate'),])
 
