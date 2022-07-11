@@ -5,7 +5,8 @@ import Admin from "./entity/Admin.js";
 import Statistics from "./entity/Statistics.js";
 
 import {DataSource, createConnection} from "typeorm";
-const AppDataSource = new DataSource({
+
+export const AppDataSource = new DataSource({
     type: "postgres",
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -24,6 +25,6 @@ const AppDataSource = new DataSource({
     "migrationsDir": "./migrations/migrations",
     logging: false,
     namingStrategy: new SnakeNamingStrategy(),
-})
+});
 
-export default AppDataSource//.initialize();
+export default AppDataSource; //.initialize();
