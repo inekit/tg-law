@@ -36,11 +36,11 @@ export const AppDataSource = new DataSource({
   ],
   synchronize: false,
   //migrationsTableName: "custom_migration_table",
-  migrations: ["./migrations/migrations/*.js"],
+  migrations: ["./migrations/*.js"],
   cli: {
-    "migrationsDir": "./migrations/migrations"
+    "migrationsDir": "./migrations"
   },
-  "migrationsDir": "./migrations/migrations",
+  "migrationsDir": "./migrations",
   logging: true,
   namingStrategy: new SnakeNamingStrategy(),
 });
