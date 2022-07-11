@@ -4,7 +4,7 @@ build-bot-stage:
   tags:
     - docker
   environment:
-    name: stage-build-bot
+    name: stage-build-core
     url: https://bot-subscription-checker.meta-forest.stage.dev.metafora.dev
   services:
     - docker:dind
