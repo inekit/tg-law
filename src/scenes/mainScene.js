@@ -109,13 +109,13 @@ clientScene.hears(titles.getTitle('BUTTON_ADDITIONAL_TASKS','ru'), async ctx=>{
 clientScene.action('subscribeAdd', async ctx=>{
     await ctx.answerCbQuery().catch(console.log);
 
-    ctx.editMenu('SUBSCRIBE_ADD_TITLE', {name: 'url_check_keyboard', args: ['LINK_PRIVATE']})
+    ctx.editMenu('SUBSCRIBE_ADD_TITLE', {name: 'url_check_keyboard', args: ['LINK_ADD']})
 })
 
 clientScene.action('subscribePrivate', async ctx=>{
     await ctx.answerCbQuery().catch(console.log);
 
-    ctx.editMenu('SUBSCRIBE_PRIVATE_TITLE', {name: 'url_check_keyboard', args: ['LINK_ADD']})
+    ctx.editMenu('SUBSCRIBE_PRIVATE_TITLE', {name: 'url_check_keyboard', args: ['LINK_PRIVATE']})
 })
 
 
