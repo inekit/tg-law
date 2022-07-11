@@ -37,7 +37,7 @@ const console  = require('node:console');
 //   });
 
 
-const  AppDataSource  = require('./data-source');
+const { AppDataSource } = require('./data-source');
 
 AppDataSource
   .initialize()
