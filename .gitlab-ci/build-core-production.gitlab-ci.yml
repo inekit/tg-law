@@ -1,4 +1,4 @@
-build-bot-production:
+build-core-production:
   image: docker:dind
   stage: build
   tags:
