@@ -1,3 +1,4 @@
+import process from 'node:process';
 import console from 'node:console';
 
 // const {
@@ -46,3 +47,5 @@ AppDataSource
   .catch(error=>{
     console.log('env-test error:',error);
   });
+
+process.exit(0);
