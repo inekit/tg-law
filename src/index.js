@@ -7,8 +7,6 @@ const middlewares = require("telegraf-steps-engine/middlewares/middlewares");
 const channelListener = require("./Utils/channelListener");
 const Cron = require("./Cron/Cron");
 
-require('dotenv').config()
-
 const allowed_updates = ["message", "callback_query", "chat_member"];
 const TOKEN =
     process.env.BOT_TOKEN;
@@ -26,10 +24,10 @@ console.log('started');
     const ctx = {...bot.context, telegram: bot.telegram };
 
     bot.use(channelListener, session(),
-        /*(new LocalSession({ 
+        /*(new LocalSession({
            database: 'PublicStorage/sessions.json',
            storage: LocalSession.storageFileAsync,
-           
+
          })).middleware(),*/
         stages);
 
@@ -44,7 +42,7 @@ console.log('started');
     if (process.env.NODE_ENV === "production") {
         bot.catch(console.error);
 
-        await bot.startWebhook(`/bot`, 
+        await bot.startWebhook(`/bot`,
             `/${TOKEN}`, {
                 key: readFileSync("./key.pem"),
                 cert: readFileSync("./cert.pem"),
