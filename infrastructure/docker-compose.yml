@@ -1,0 +1,56 @@
+---
+version: "3.8"
+services:
+  core:
+    image: "dr.metafora.dev/meta-forest/bot-subscription-checker/core/none:latest"
+    pull_policy: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.meta-forest-bot-subscription-checker-core.loadbalancer.server.port=3000"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    deploy:
+      replicas: 0
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          memory: 1024M
+          cpus: '0.50'
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.meta-forest-bot-subscription-checker-core.loadbalancer.server.port=3000"
+    # environment:
+    networks:
+      meta-forest:
+        aliases:
+          - meta-forest-bot-subscription-checker-core
+      meta-forest-bot-subscription-checker:
+        aliases:
+          - meta-forest-bot-subscription-checker-core
+      meta-forest_ext:
+        aliases:
+          - meta-forest-bot-subscription-checker-core
+
+
+
+networks:
+
+  meta-forest:
+    external: true
+    name: meta-forest
+
+  meta-forest-bot-subscription-checker:
+    external: true
+    name: meta-forest-bot-subscription-checker
+
+  meta-forest_ext:
+    external: true
+    name: meta-forest_ext
+...

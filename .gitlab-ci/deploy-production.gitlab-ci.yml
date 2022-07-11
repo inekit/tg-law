@@ -1,0 +1,19 @@
+deploy-production:
+  image: lotygerodistribution/docker-compose
+  stage: deploy
+  tags:
+    - docker
+  environment:
+    name: production-deploy
+    url: https://meta-forest.stage.dev.metafora.dev
+  variables:
+    COMPOSE_TEMP_PATH: ".tmp"
+
+    DOCKER_SWARM_HOST: "${DOCKER_SWARM_HOST}"
+
+  script:
+    - "./bin/docker-compose-render.sh"
+    - "./bin/docker-registry-login.sh"
+    - "./bin/docker-compose-pull.sh"
+    - "./bin/docker-swarm-networks.sh"
+    - "./bin/docker-swarm-deploy.sh"
