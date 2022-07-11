@@ -1,0 +1,15 @@
+---
+version: "3.8"
+services:
+  core:
+    image: "dr.metafora.dev/meta-forest/bot-subscription-checker/core/stage:latest"
+    networks:
+      metafora:
+        aliases:
+          - meta-forest-bot-subscription-checker-core
+
+networks:
+  metafora:
+    external: true
+    name: metafora
+...
