@@ -1,7 +1,4 @@
-import d from 'dotenv' ;
-d.config()
-
-import {SnakeNamingStrategy} from 'typeorm-naming-strategies'
+import {SnakeNamingStrategy} from 'typeorm-naming-strategies';
 
 import User from "./entity/User.js";
 import Admin from "./entity/Admin.js";
@@ -29,4 +26,4 @@ const AppDataSource = new DataSource({
     namingStrategy: new SnakeNamingStrategy(),
 })
 
-export default AppDataSource//.initialize(); 
+export default AppDataSource//.initialize();
