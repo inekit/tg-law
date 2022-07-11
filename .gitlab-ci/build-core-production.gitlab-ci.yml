@@ -9,7 +9,7 @@ build-bot-production:
   services:
     - docker:dind
   variables:
-    SERVICE: "bot"
+    SERVICE: "core"
   script:
     - "./bin/docker-registry-login.sh"
     - "./bin/docker-image-build.sh"
