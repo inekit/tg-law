@@ -1,5 +1,5 @@
-import process from 'node:process';
-import console from 'node:console';
+const process  = require('node:process');
+const console  = require('node:console');
 
 // const {
 //   DB_HOST,
@@ -37,7 +37,7 @@ import console from 'node:console';
 //   });
 
 
-import { AppDataSource } from  './data-source.js';
+const { AppDataSource }  = require('./data-source');
 
 AppDataSource
   .initialize()

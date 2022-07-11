@@ -1,12 +1,12 @@
-import process from 'node:process';
+const process = require('node:process');
 
-import {SnakeNamingStrategy} from 'typeorm-naming-strategies';
+const  {SnakeNamingStrategy} = require('typeorm-naming-strategies');
 
-import User from "./entity/User.js";
-import Admin from "./entity/Admin.js";
-import Statistics from "./entity/Statistics.js";
+const User = require('./entity/User');
+const Admin  = require('./entity/Admin');
+const Statistics  = require('./entity/Statistics');
 
-import { DataSource } from "typeorm";
+const { DataSource } = require('typeorm');
 
 const {
   DB_HOST,
@@ -24,7 +24,7 @@ const {
 //   DB_DATABASE,
 // });
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: "postgres",
   host: DB_HOST,
   port: DB_PORT,
@@ -44,5 +44,7 @@ export const AppDataSource = new DataSource({
   logging: true,
   namingStrategy: new SnakeNamingStrategy(),
 });
+
+module.exports = AppDataSource;
 
 // export default AppDataSource; //.initialize();
