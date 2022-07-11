@@ -40,12 +40,31 @@ import console from 'node:console';
 import { AppDataSource } from  './data-source.js';
 
 AppDataSource
-  .runMigrations()
-  .then((data)=>{
-    console.lg('runMigrations data', data);
-  })
-  .catch(error=>{
-    console.log('env-test error:',error);
+  .initialize()
+  .then(()=>{
+    console.log('connected');
+    AppDataSource
+      .runMigrations()
+      .then((data)=>{
+        console.lg('runMigrations data', data);
+      })
+      .catch(error=>{
+        console.log('env-test error:',error);
+      });
+
+  }).catch((err)=>{
+    console.error('error init', err);
   });
+
+
+// AppDataSource
+//   .connection()
+//   .runMigrations()
+//   .then((data)=>{
+//     console.lg('runMigrations data', data);
+//   })
+//   .catch(error=>{
+//     console.log('env-test error:',error);
+//   });
 
 //process.exit(0);
