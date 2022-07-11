@@ -16,8 +16,6 @@ console.log({
   DB_DATABASE,
 });
 
-// console.log('process.env',process.env);
-
 import {DataSource, createConnection} from "typeorm";
 
 createConnection({
