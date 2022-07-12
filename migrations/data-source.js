@@ -35,7 +35,7 @@ const AppDataSource = new DataSource({
     User, Admin, Statistics
   ],
   synchronize: false,
-  //migrationsTableName: "custom_migration_table",
+  migrationsTableName: "custom_migration_table",
   migrations: ["./migrations/*.js"],
   cli: {
     "migrationsDir": "./migrations"
