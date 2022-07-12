@@ -1,7 +1,7 @@
 const { Scenes: { BaseScene } } = require('telegraf');
 
 const { titles } = require('telegraf-steps-engine');
-const tOrmCon = require("../db/data-source");
+const tOrmCon = require("../db/connection");
 const generateCaptcha = require("../Utils/generateCaptcha");
 const checkSubscription = require("../Utils/checkSubscription");
 const isCaptchaNeeded = require("../Utils/isCaptchaNeeded");

@@ -2,9 +2,9 @@ const process = require('node:process');
 
 const  {SnakeNamingStrategy} = require('typeorm-naming-strategies');
 
-const User = require('./entity/User');
-const Admin  = require('./entity/Admin');
-const Statistics  = require('./entity/Statistics');
+const User = require('./src/db/entity/User');
+const Admin  = require('./src/db/entity/Admin');
+const Statistics  = require('./src/db/entity/Statistics');
 
 const { DataSource } = require('typeorm');
 
@@ -15,14 +15,6 @@ const {
   DB_PASSWORD,
   DB_DATABASE,
 } = process.env;
-
-// console.log({
-//   DB_HOST,
-//   DB_PORT,
-//   DB_USER,
-//   DB_PASSWORD,
-//   DB_DATABASE,
-// });
 
 const AppDataSource = new DataSource({
   type: "postgres",
@@ -36,15 +28,14 @@ const AppDataSource = new DataSource({
   ],
   synchronize: false,
   migrationsTableName: "custom_migration_table",
-  migrations: ["./migrations/*.js"],
+  migrations: ["./src/db/migrations/*.js"],
   cli: {
-    "migrationsDir": "./migrations"
+    "migrationsDir": "./src/db/migrations"
   },
-  "migrationsDir": "./migrations",
+  "migrationsDir": "./src/db/migrations",
   logging: true,
   namingStrategy: new SnakeNamingStrategy(),
 });
 
 module.exports.AppDataSource = AppDataSource;
 
-// export default AppDataSource; //.initialize();

@@ -1,5 +1,5 @@
 const cron = require('node-cron')
-const tOrmCon = require("../db/data-source");
+const tOrmCon = require("../db/connection");
 const broadCast = require('../Utils/broadCast')
 const sendCaptcha = require('../Utils/sendCaptcha')
 

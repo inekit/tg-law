@@ -5,7 +5,7 @@ roleHandler = new Composer();
 
 const scene = new WizardScene('adminsScene', adminIdHandler, newIdHandler, roleHandler)
 
-const tOrmCon = require("../../db/data-source");
+const tOrmCon = require("../../db/connection");
 
 scene.enter(async ctx => {
 

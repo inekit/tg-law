@@ -1,7 +1,7 @@
 const { Composer, Scenes: { BaseScene, WizardScene } } = require('telegraf')
 const titles = require('telegraf-steps-engine/middlewares/titles')
 const main_menu_button = 'admin_back_keyboard'
-const tOrmCon = require("../db/data-source");
+const tOrmCon = require("../db/connection");
 const noneListener = new Composer(),  addListener = new Composer(), captchaListener = new Composer(),  userIdListener = new Composer();
 const broadCast = require('../Utils/broadCast')
 const adminScene = new WizardScene('adminScene', noneListener, addListener, captchaListener, userIdListener)
