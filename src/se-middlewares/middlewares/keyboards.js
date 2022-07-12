@@ -80,13 +80,6 @@ exports.categories_list_keyboard_bottom = (ctx, data, totalStr) => {
 
 
 
-exports.i_subscribed_keyboard = (ctx) => Markup.keyboard([
-
-	ctx.getTitle('I_SUBSCRIBED'),
-
-], { columns: 1 }).resize()
-
-
 exports.admin_main_keyboard = ctx=>Markup.keyboard([
 
 	[

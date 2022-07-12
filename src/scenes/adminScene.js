@@ -3,8 +3,9 @@ const titles = require('telegraf-steps-engine/middlewares/titles')
 const main_menu_button = 'admin_back_keyboard'
 const tOrmCon = require("../db/data-source");
 const noneListener = new Composer(),  addListener = new Composer(), captchaListener = new Composer(),  userIdListener = new Composer();
-
+const broadCast = require('../Utils/broadCast')
 const adminScene = new WizardScene('adminScene', noneListener, addListener, captchaListener, userIdListener)
+const sendCaptcha = require('../Utils/sendCaptcha')
 
 adminScene.enter(async ctx=>{
     const connection = await tOrmCon
@@ -38,14 +39,20 @@ captchaListener.action('send_captcha', async ctx=>{
 
     const connection = await tOrmCon
 
-    await connection.query('update users set is_captcha_needed = true')
-    .then(res=>{
-        ctx.replyWithTitle('CAPTCHA_ADD_SUCCESS');
-    })
-    .catch(e=>{
-        ctx.replyWithTitle('DB_ERROR');
-    
-    })
+    let usersIds = (await connection.query(
+        `SELECT u.id FROM users u left join admins a on a.user_id = u.id where a.user_id isnull`)
+    .catch((e)=>{
+        console.log(e)
+        ctx.replyWithTitle("DB_ERROR")
+    }))?.map(el=>el.id)
+
+    broadCast({users: usersIds, callback: async (userId)=>{
+        await sendCaptcha(ctx,userId)
+    }})
+
+    await ctx.replyWithTitle("CAPTCHA_BROADCAST_SUCCESS");
+
+    await ctx.scene.reenter();
 })
 
 captchaListener.action('cancel_captcha', async ctx=>{
@@ -74,6 +81,7 @@ userIdListener.on('message', async ctx=>{
         ctx.replyWithTitle('DB_ERROR');
     
     })
+
 })
 
 
@@ -101,16 +109,15 @@ addListener.action('confirm', async ctx=>{
     const connection = await tOrmCon
 
     let usersIds = (await connection.query(
-            `SELECT u.id FROM users u`, 
-            [ctx.from?.id])
+            `SELECT u.id FROM users u left join admins a on a.user_id = u.id where a.user_id isnull`)
         .catch((e)=>{
             console.log(e)
             ctx.replyWithTitle("DB_ERROR")
         }))?.map(el=>el.id)
 
-    usersIds.forEach(id=>{
-        ctx.telegram.sendMessage(id, ctx.wizard.state.add_text).catch(console.log)
-    })
+    broadCast({users: usersIds, callback: (userId)=>{
+        ctx.telegram.sendMessage(userId, ctx.wizard.state.add_text).catch(console.log)
+    }})
 
     ctx.scene.reenter()
 })
