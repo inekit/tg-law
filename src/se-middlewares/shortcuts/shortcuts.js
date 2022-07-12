@@ -32,22 +32,26 @@ module.exports = ({
 		return titles.setTitle(title, value) 
 	},
 
-	getTitle: function(title, options) { 
+	getTitle: function(title, options, markup) { 
 
-		return titles.getTitle(title, this.session?.language || 'ru', options) 
+		return titles.getTitle(title, this.session?.language || 'ru', options, markup) 
 	},
 
-	replyWithTitle: function(title, options) { 
+	replyWithTitle: function(title, options, markup) { 
 
-		return this.replyWithHTML(this.getTitle(title, options), { disable_web_page_preview: true }).catch(handleRestriction)
+		return markup === 'md2' ?
+		this.replyWithMarkdownV2(this.getTitle(title, options, markup), { disable_web_page_preview: true }).catch(handleRestriction) :
+		this.replyWithHTML(this.getTitle(title, options), { disable_web_page_preview: true }).catch(handleRestriction)
 	},
 
-	replyWithKeyboard: async function(title, keyboard, options) { 
+	replyWithKeyboard: async function(title, keyboard, options, markup) { 
 
 		const extra = createKeyboard(keyboard, this)
 		extra.disable_web_page_preview = true
 
-		const response = await this.replyWithHTML(this.getTitle(title, options), extra).catch(handleRestriction)
+		const response = markup === 'md2' ?
+		 await this.replyWithMarkdownV2(this.getTitle(title, options, markup), extra).catch(handleRestriction) :
+		 await this.replyWithHTML(this.getTitle(title, options), extra).catch(handleRestriction)
 
 		if(this.session) this.session.last_keyboard = response?.message_id
 
@@ -128,13 +132,17 @@ module.exports = ({
 		return this.editMessageReplyMarkup(reply_markup).catch(e => {})
 	},
 
-	editMenu: async function(title, keyboard, options) { 
+	editMenu: async function(title, keyboard, options, markup) { 
 
-		const extra = { parse_mode: 'HTML', disable_web_page_preview: true }
+		console.log('editMenu', this.getTitle(title, options,markup), markup)
+
+		const extra = { parse_mode: markup === 'md2' ? 'MarkdownV2' : 'HTML', disable_web_page_preview: true }
+
+		console.log(extra)
 		
 		keyboard && Object.assign(extra, await createKeyboard(keyboard, this))
 
-		return this.editMessageText(this.getTitle(title, options), extra).catch(e => {
+		return this.editMessageText(this.getTitle(title, options,markup), extra).catch(e => {
 			//console.log(e);
 		})
 	},

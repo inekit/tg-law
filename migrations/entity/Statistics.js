@@ -1,9 +1,8 @@
-//var EntitySchema = require("typeorm").EntitySchema;
-import { EntitySchema } from "typeorm";
+const EntitySchema = require("typeorm").EntitySchema;
 
-export default  new EntitySchema({
-    name: "Statistics", 
-    tableName: "statistics", 
+module.exports = new EntitySchema({
+    name: "Statistics",
+    tableName: "statistics",
     columns: {
         date:{
             primary: true,
@@ -15,8 +14,8 @@ export default  new EntitySchema({
         },
         cart_per_day: {
             type: "int",
-            default:0,        
+            default:0,
         },
-        
+
     }
 });

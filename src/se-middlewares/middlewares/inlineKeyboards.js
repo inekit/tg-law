@@ -8,7 +8,7 @@ const { inlineKeyboard } = Markup
 
 exports.url_check_keyboard = (ctx, linkTitle ) => {
 
-console.log(linkTitle)
+    console.log(linkTitle)
     const keyboard = inlineKeyboard([
         urlButton(ctx.getTitle('LINK_NAME'), ctx.getTitle(linkTitle)),
         callbackButton(ctx.getTitle("BUTTON_CHECK_SUBSCRIBE"), `i_subscribed_${ctx.getTitle(linkTitle)}`),
@@ -18,6 +18,18 @@ console.log(linkTitle)
 
     return keyboard
 }
+
+exports.i_subscribed_keyboard = (ctx, linkTitle ) => {
+
+        const keyboard = inlineKeyboard([
+            urlButton(ctx.getTitle('LINK_NAME'), ctx.getTitle(linkTitle)),
+            callbackButton(ctx.getTitle("I_SUBSCRIBED"), `i_subscribed_main`),
+
+        ], { columns: 1 })
+    
+        return keyboard
+    }
+
 
 
 exports.subscribe_additional_keyboard = (ctx, subscribedPrivate ) => {

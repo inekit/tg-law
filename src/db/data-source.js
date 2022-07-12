@@ -1,21 +1,31 @@
+const process = require('process');
 const SnakeNamingStrategy = require('typeorm-naming-strategies')
   .SnakeNamingStrategy;
 
-let {DataSource, createConnection} = require("typeorm");
+const {DataSource, createConnection} = require("typeorm");
+
+const {
+  DB_HOST,
+  DB_PORT,
+  DB_USER,
+  DB_PASSWORD,
+  DB_DATABASE,
+} = process.env;
+
 const AppDataSource = new DataSource({
     type: "postgres",
-    host: process.env.DB_HOST,
-    port: process.env.PORT,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DATABASE,
+    host: DB_HOST,
+    port: DB_PORT,
+    username: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_DATABASE,
     entities: [
         require("./entity/User"),
         require("./entity/Admin"),
         require("./entity/Statistics")
     ],
-    synchronize: false,
-    logging: false,
+    synchronize: true,
+    logging: true,
     namingStrategy: new SnakeNamingStrategy(),
 });
 

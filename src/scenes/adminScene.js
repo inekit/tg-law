@@ -3,7 +3,7 @@ const titles = require('telegraf-steps-engine/middlewares/titles')
 const main_menu_button = 'admin_back_keyboard'
 const tOrmCon = require("../db/data-source");
 const noneListener = new Composer(),  addListener = new Composer(), captchaListener = new Composer(),  userIdListener = new Composer();
-
+const broadCast = require('../Utils/broadCast')
 const adminScene = new WizardScene('adminScene', noneListener, addListener, captchaListener, userIdListener)
 
 adminScene.enter(async ctx=>{
@@ -101,16 +101,15 @@ addListener.action('confirm', async ctx=>{
     const connection = await tOrmCon
 
     let usersIds = (await connection.query(
-            `SELECT u.id FROM users u`, 
-            [ctx.from?.id])
+            `SELECT u.id FROM users u`)
         .catch((e)=>{
             console.log(e)
             ctx.replyWithTitle("DB_ERROR")
         }))?.map(el=>el.id)
 
-    usersIds.forEach(id=>{
-        ctx.telegram.sendMessage(id, ctx.wizard.state.add_text).catch(console.log)
-    })
+    broadCast({users: usersIds, callback: (userId)=>{
+        ctx.telegram.sendMessage(userId, ctx.wizard.state.add_text).catch(console.log)
+    }})
 
     ctx.scene.reenter()
 })

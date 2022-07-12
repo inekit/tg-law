@@ -42,7 +42,7 @@ module.exports = new EntitySchema({
     relations: {
         referer: {
             target: "User",
-            type: "one-to-one",
+            type: "one-to-many",
             cascade: true,
             joinColumn: true,
             onDelete: 'set null',

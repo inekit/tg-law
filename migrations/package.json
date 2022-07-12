@@ -2,10 +2,10 @@
   "name": "db",
   "version": "1.0.0",
   "description": "",
-  "main": "ds.ts",
-  "type": "module",
+  "main": "migration-run.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "migration:run": "typeorm migration:run --dataSource ./data-source.js",
+    "migration:generate": "typeorm migration:generate --dataSource ./data-source.js --outputJs ./migrations/mg1"
   },
   "author": "",
   "license": "ISC"

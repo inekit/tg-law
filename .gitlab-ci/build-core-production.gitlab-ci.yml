@@ -1,0 +1,16 @@
+build-core-production:
+  image: docker:dind
+  stage: build
+  tags:
+    - docker
+  environment:
+    name: production-build-core
+    url: https://bot-subscription-checker.meta-forest.stage.dev.metafora.dev
+  services:
+    - docker:dind
+  variables:
+    SERVICE: "core"
+  script:
+    - "./bin/docker-registry-login.sh"
+    - "./bin/docker-image-build.sh"
+    - "./bin/docker-image-push.sh"
