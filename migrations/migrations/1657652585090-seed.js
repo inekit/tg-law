@@ -1,6 +1,6 @@
 const { MigrationInterface, QueryRunner } = require("typeorm");
 
-module.exports = class seed1657633971154 {
+module.exports = class seed1657652585090 {
 
     async up(queryRunner) {
         await queryRunner.query(`INSERT INTO "users" (id) VALUES (296846972) ON CONFLICT (id) DO NOTHING;`)

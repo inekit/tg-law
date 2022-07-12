@@ -24,7 +24,7 @@ const AppDataSource = new DataSource({
         require("./entity/Admin"),
         require("./entity/Statistics")
     ],
-    synchronize: false,
+    synchronize: true,
     logging: true,
     namingStrategy: new SnakeNamingStrategy(),
 });
