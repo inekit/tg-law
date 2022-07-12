@@ -5,7 +5,7 @@ const tOrmCon = require("../db/data-source");
 const generateCaptcha = require("../Utils/generateCaptcha");
 const checkSubscription = require("../Utils/checkSubscription");
 const isCaptchaNeeded = require("../Utils/isCaptchaNeeded");
-
+const store = require('../store')
 async function getUser(ctx){
   const connection = await tOrmCon;
 
@@ -264,8 +264,10 @@ clientScene.on('message', async ctx=>{
 
   if (!(await isCaptchaNeeded(ctx))) return;
 
-  if (ctx.message?.text !== ctx.scene.state.captchaAnswer) { ctx.replyWithTitle("WRONG_CAPTCHA");return sendCaptcha(ctx);}
+  if (ctx.message?.text !== ctx.scene.state.captchaAnswer && ctx.message?.text !== store.getCaptcha(ctx.from?.id.toString())) { ctx.replyWithTitle("WRONG_CAPTCHA");return sendCaptcha(ctx);}
 
+  store.setCaptcha(ctx.from?.id, undefined);
+  
   await connection.query('update users set is_captcha_needed = false where id = $1', [ctx.from?.id])
     .then(res=>{
       ctx.replyWithTitle('CAPTCHA_SUCCESS');

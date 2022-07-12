@@ -40,7 +40,7 @@ module.exports = Telegraf.on('chat_member', Telegraf.optional(
             group by u.id,  a.user_id
             limit 1; `, [userObj?.referer_id, +!isPrivate, +!!isPrivate]).catch(console.log))?.[0]
 
-        const link = `https://t.me/METABUNNY_bot/?start=botuser-${ctx?.from?.id}`;
+        const username = `@${ctx?.from?.username}`
 
 
         if (chatId === process.env.CHAT_ID) {
@@ -49,14 +49,14 @@ module.exports = Telegraf.on('chat_member', Telegraf.optional(
   
           const {referals, balance} = await getRefererInfo() ?? {}
 
-          title = ctx.getTitle('NEW_REFERER', [link, referals, balance])
+          title = ctx.getTitle('NEW_REFERER', [username, referals, balance])
         } 
         else if (chatId === process.env.PRIVATE_CHAT_ID) {
             
           if (!userObj || userObj.is_subscribed_private===true || !userObj?.referer_id) return;
   
           const {referals_private, balance} = await getRefererInfo(true) ?? {}
-          title = ctx.getTitle('NEW_REFERER_PRIVATE', [link, referals_private, balance])
+          title = ctx.getTitle('NEW_REFERER_PRIVATE', [username, referals_private, balance])
   
         } 
         else if (chatId === process.env.ADD_CHAT_ID && (!userObj || userObj?.is_subscribed_add===true)) return;

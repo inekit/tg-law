@@ -17,6 +17,11 @@ module.exports = new EntitySchema({
             nullable: false,
             default: true,
         },
+        captcha_request_datetime: {
+            type: "timestamp",
+            nullable: false,
+            default: () => "CURRENT_TIMESTAMP",
+        },
         is_subscribed: {
             type: "boolean",
             nullable: false,
