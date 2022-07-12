@@ -17,6 +17,11 @@ module.exports = new EntitySchema({
             nullable: false,
             default: true,
         },
+        captcha_request_datetime: {
+            type: "timestamp",
+            nullable: false,
+            default: () => "CURRENT_TIMESTAMP",
+        },
         is_subscribed: {
             type: "boolean",
             nullable: false,
@@ -42,7 +47,7 @@ module.exports = new EntitySchema({
     relations: {
         referer: {
             target: "User",
-            type: "one-to-one",
+            type: "one-to-many",
             cascade: true,
             joinColumn: true,
             onDelete: 'set null',

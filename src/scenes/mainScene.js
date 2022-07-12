@@ -5,16 +5,21 @@ const tOrmCon = require("../db/data-source");
 const generateCaptcha = require("../Utils/generateCaptcha");
 const checkSubscription = require("../Utils/checkSubscription");
 const isCaptchaNeeded = require("../Utils/isCaptchaNeeded");
-
+const store = require('../store')
 async function getUser(ctx){
   const connection = await tOrmCon;
 
   let userObj = (await connection.query(
-    `SELECT u.id, DATE_PART('day', now() - u.last_use) login_ago,user_id, u.is_captcha_needed, count(u2.id) referals, u.is_subscribed, count(u2.is_subscribed_private::int) private_referals, count(u2.is_subscribed::int)*5+count(u2.is_subscribed_private::int)*50 +u.is_subscribed_private::int*100 balance
-        FROM users u left join users u2 on u.id = u2.referer_id
-        left join admins a on a.user_id = u.id where u.id = $1
-        group by u.id,  a.user_id
-        limit 1;`,
+    `SELECT u.id, DATE_PART('day', now() - u.last_use) login_ago,user_id, u.is_captcha_needed, 
+    sum((case when u2.is_subscribed isnull then false else u2.is_subscribed end)::int) referals, u.is_subscribed, u.is_subscribed_private, u.is_subscribed_add, 
+    sum((case when u2.is_subscribed_private isnull then false else u2.is_subscribed_private end)::int) private_referals, 
+      least(sum((case when u2.is_subscribed isnull then false else u2.is_subscribed end)::int), 20) * 5  +
+      sum((case when u2.is_subscribed_private isnull then false else u2.is_subscribed_private end)::int)*40 + 
+      u.is_subscribed_private::int*80 + 
+      u.is_subscribed_add::int*5 balance
+      FROM users u left join users u2 on u.id = u2.referer_id
+      left join admins a on a.user_id = u.id where u.id = $1
+      group by u.id,  a.user_id`,
     [ctx.from?.id])
                  .catch((e)=>{
                    console.log(e);
@@ -27,73 +32,107 @@ async function getUser(ctx){
 const getUserName =  (ctx)=> ctx.from?.first_name ?? ctx.from?.username ?? "Друг";
 
 const clientScene = new BaseScene('clientScene')
-      .enter(async ctx=>{
+.enter(async ctx=>{
 
-        const { edit, isNewUser } = ctx.scene.state;
+  //ctx.replyWithHTML('ffrfr', {reply_markup: {remove_keyboard: true}})
 
-        let userObj = ctx.scene.state.userObj = await getUser(ctx);
+  const { edit, isNewUser } = ctx.scene.state;
 
-        const name = getUserName(ctx);
+  let userObj = ctx.scene.state.userObj = await getUser(ctx);
 
-        const link = `https://t.me/METABUNNY_bot/?start=botuser-${ctx?.from?.id}`;
+  console.log(userObj)
 
-        const connection = await tOrmCon;
+  const name = getUserName(ctx);
 
-        if (!userObj) {
+  const link = `https://t.me/METABUNNY_bot/?start=botuser-${ctx?.from?.id}`;
 
-          const referer_id = ctx.startPayload?.split("-")[1];
+  const connection = await tOrmCon;
 
-          if (parseInt(referer_id)===ctx.from?.id) referer_id = undefined;
+  const is_subscribed = await checkSubscription(ctx, process.env.CHAT_ID);
+  const is_subscribed_private = await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID);
+  const is_subscribed_add = await checkSubscription(ctx, process.env.ADD_CHAT_ID)
 
-          userObj = await connection.getRepository("User")
-            .save({id: ctx.from.id, referer_id, is_subscribed: await checkSubscription(ctx, process.env.CHAT_ID)})
-            .catch((e)=>{
-              console.log(e);
-              ctx.replyWithTitle("DB_ERROR");
-            });
+
+  if (!userObj) {
+
+    let referer_id = ctx.startPayload?.split("-")[1];
+
+    console.log('referer_id', referer_id)
+
+    if (parseInt(referer_id)===ctx.from?.id) referer_id = undefined;
+
+    userObj = await connection.getRepository("User")
+      .save({id: ctx.from.id, referer_id, is_subscribed, is_subscribed_private, is_subscribed_add })
+      .catch(async (e)=>{
+        if (e.code == 23503) 
+          return await connection.getRepository("User")
+          .save({id: ctx.from.id, is_subscribed, is_subscribed_private, is_subscribed_add})
+          .catch((e)=>{
+            console.log(e);
+            ctx.replyWithTitle("DB_ERROR");
+          });
+        
+        else {
+          console.log(e);
+          ctx.replyWithTitle("DB_ERROR");
         }
 
-
-        if (userObj?.is_captcha_needed) return await sendCaptcha(ctx);
-
-        if (!await checkSubscription(ctx, process.env.CHAT_ID)) return await ctx.replyWithKeyboard(ctx.getTitle("GREETING", [name]),'i_subscribed_keyboard');
-
-        setTimeout(async ()=>{
-          if (!await checkSubscription(ctx, process.env.CHAT_ID)) await ctx.replyWithKeyboard("NOT_SUBSCRIBED",'i_subscribed_keyboard');
-        }, 60000);
-
-
-        if (userObj?.user_id) {
-        } else if (userObj?.loginAgo!=="0") {
-
-
-          await connection.query(
-            "UPDATE users u SET last_use = now() WHERE id = $1",
-            [ctx.from?.id])
-            .catch((e)=>{
-              console.log(e);
-              ctx.replyWithTitle("DB_ERROR");
-            });
-        }
-
-        await ctx.replyWithVideoNote(ctx.getTitle('VIDEO_NOTE_ID'));
-
-        await ctx.replyWithKeyboard(ctx.getTitle("HOME_MENU_2",
-                                                 [userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ]),
-                                    {name: 'main_keyboard', args: [userObj?.user_id]});
       });
+  }
 
-clientScene.hears(titles.getTitle('BUTTON_RULES','ru'), async ctx=>{
+  console.log(userObj)
 
+  if (userObj?.is_captcha_needed) return await sendCaptcha(ctx);
+
+  if (!await checkSubscription(ctx, process.env.CHAT_ID)) {
+
+    setTimeout(async ()=>{
+      if (!await checkSubscription(ctx, process.env.CHAT_ID)) await ctx.replyWithKeyboard("NOT_SUBSCRIBED",{name: 'i_subscribed_keyboard', args: ['MAIN_CHAT_LINK']});
+    }, 60000);
+
+    return await ctx.replyWithKeyboard(ctx.getTitle("GREETING", [name]),
+    {name: 'i_subscribed_keyboard', args: ['MAIN_CHAT_LINK']});
+
+  }
+   
+
+
+  if (userObj?.user_id) {
+  } else if (userObj?.loginAgo!=="0") {
+
+
+    await connection.query(
+      "UPDATE users u SET last_use = now() WHERE id = $1",
+      [ctx.from?.id])
+      .catch((e)=>{
+        console.log(e);
+        ctx.replyWithTitle("DB_ERROR");
+      });
+  }
+
+  await ctx.replyWithKeyboard(ctx.getTitle("HOME_MENU_2",
+    [userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ]),
+    {name: 'main_keyboard', args: [userObj?.user_id]});
+});
+
+
+async function sendRules (ctx){
   const name = ctx.from?.first_name ?? ctx.from?.username ?? "Друг";
 
+  await ctx.replyWithVideoNote(ctx.getTitle('VIDEO_NOTE_RULES_ID')).catch(e=>{});
+
   ctx.replyWithTitle('RULES_TITLE', [name]);
-});
+}
+clientScene.hears(titles.getTitle('BUTTON_RULES','ru'), async ctx => await sendRules(ctx));
+
+clientScene.command('help', async ctx => await sendRules(ctx));
+
+
 
 clientScene.hears(titles.getTitle('BUTTON_FREE_NFT','ru'), async ctx=>{
 
-  ctx.replyWithPhoto(ctx.getTitle("FREE_NFT_PHOTO"), {caption: ctx.getTitle('FREE_NFT_TITLE'), parse_mode: "HTML"}).catch(e=>{
-    ctx.replyWithTitle('FREE_NFT_TITLE');
+  ctx.replyWithPhoto(ctx.getTitle("FREE_NFT_PHOTO"), {caption: ctx.getTitle('FREE_NFT_TITLE', [], 'md2'), parse_mode: "MarkdownV2"}).catch(e=>{
+    ctx.replyWithTitle('FREE_NFT_TITLE', [], 'md2');
   });
 });
 
@@ -111,14 +150,40 @@ clientScene.action('subscribeAdd', async ctx=>{
 clientScene.action('subscribePrivate', async ctx=>{
   await ctx.answerCbQuery().catch(console.log);
 
-  ctx.editMenu('SUBSCRIBE_PRIVATE_TITLE', {name: 'url_check_keyboard', args: ['LINK_PRIVATE']});
+  ctx.editMenu('SUBSCRIBE_PRIVATE_TITLE', {name: 'url_check_keyboard', args: ['LINK_PRIVATE']},[], 'md2');
 });
 
 
 clientScene.action(/^i_subscribed_(.+)$/g, async ctx=>{
-
+  ctx.answerCbQuery(ctx.getTitle()).catch(console.log);
 
   const connection = await tOrmCon;
+
+  if (ctx.match?.[1]==='main') {
+
+    if (!await checkSubscription(ctx, process.env.CHAT_ID)) return ctx.replyWithKeyboard("NOT_SUBSCRIBED",{name: 'i_subscribed_keyboard', args: ['MAIN_CHAT_LINK']});
+
+    await connection.query(
+      "UPDATE users u SET is_subscribed = true WHERE id = $1",
+      [ctx.from?.id])
+      .catch((e)=>{
+        console.log(e);
+        ctx.replyWithTitle("DB_ERROR");
+      });
+
+    const userObj = ctx.scene.state.userObj;
+
+    const name = getUserName(ctx);
+
+    const link = ctx.getTitle('REFERAL_LINK', [ctx?.from?.id], 'md2')
+
+    await ctx.replyWithVideoNote(ctx.getTitle('VIDEO_NOTE_GREETING_ID')).catch(e=>{});
+
+    return await ctx.replyWithKeyboard("HOME_MENU_GREETING", 
+    {name: 'main_keyboard', args: [userObj?.user_id]}, 
+    [name,userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ],
+    'md2');
+  }
 
   if (ctx.match?.[1]===ctx.getTitle('LINK_ADD')) {
 
@@ -126,7 +191,7 @@ clientScene.action(/^i_subscribed_(.+)$/g, async ctx=>{
 
 
     if (!await checkSubscription(ctx, process.env.ADD_CHAT_ID))
-      return await ctx.answerCbQuery(ctx.getTitle("NOT_SUBSCRIBED_CB")).catch(console.log);;
+      return await ctx.replyWithTitle("NOT_SUBSCRIBED_CB")
 
     await connection.query(
       "UPDATE users u SET is_subscribed_add = true WHERE id = $1",
@@ -136,55 +201,34 @@ clientScene.action(/^i_subscribed_(.+)$/g, async ctx=>{
         ctx.replyWithTitle("DB_ERROR");
       });
 
-    await ctx.answerCbQuery(ctx.getTitle("SUBSCRIBED_CB")).catch(console.log);
+    return await ctx.replyWithTitle("SUBSCRIBED_CB")
   }
 
-  if (!await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID))
-    return await ctx.answerCbQuery(ctx.getTitle("NOT_SUBSCRIBED_PRIVATE_CB")).catch(console.log);;
+  if (ctx.match?.[1]===ctx.getTitle('LINK_PRIVATE')) {
 
-  await connection.query(
-    "UPDATE users u SET is_subscribed_private = true WHERE id = $1",
-    [ctx.from?.id])
-    .catch((e)=>{
-      console.log(e);
-      ctx.replyWithTitle("DB_ERROR");
-    });
+    if (!await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID))
+      return await ctx.replyWithTitle("NOT_SUBSCRIBED_PRIVATE_CB")
 
-  await ctx.answerCbQuery(ctx.getTitle("SUBSCRIBED_PRIVATE_CB")).catch(console.log);
-  return ctx.scene.reenter();
+    await connection.query(
+      "UPDATE users u SET is_subscribed_private = true WHERE id = $1",
+      [ctx.from?.id])
+      .catch((e)=>{
+        console.log(e);
+        ctx.replyWithTitle("DB_ERROR");
+      });
 
-});
-
-
-clientScene.hears(titles.getTitle('I_SUBSCRIBED','ru'), async ctx=>{
-
-  const connection = await tOrmCon;
-
-  if (!await checkSubscription(ctx, process.env.CHAT_ID)) return ctx.replyWithTitle("NOT_SUBSCRIBED");
-
-  await connection.query(
-    "UPDATE users u SET is_subscribed = true WHERE id = $1",
-    [ctx.from?.id])
-    .catch((e)=>{
-      console.log(e);
-      ctx.replyWithTitle("DB_ERROR");
-    });
-
-  const userObj = ctx.scene.state.userObj;
-
-  const name = getUserName(ctx);
-
-  const link = `https://t.me/METABUNNY_bot/?start=botuser-${ctx?.from?.id}`;
-
-  return await ctx.replyWithKeyboard(ctx.getTitle("HOME_MENU_GREETING", [name,userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ]),{name: 'main_keyboard', args: [userObj?.user_id]});
+    await ctx.replyWithTitle("SUBSCRIBED_PRIVATE_CB")
+    return ctx.scene.reenter();
+  }
 
 });
+
 
 clientScene.hears(titles.getTitle('I_SUBSCRIBED_PRIVATE','ru'), async ctx=>{
 
   const connection = await tOrmCon;
 
-  if (!await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)) return ctx.replyWithTitle("NOT_SUBSCRIBED_PRIVATE");
+  if (!await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)) ctx.replyWithTitle("NOT_SUBSCRIBED_PRIVATE_CB")
 
   await connection.query(
     "UPDATE users u SET is_subscribed_private = true WHERE id = $1",
@@ -220,8 +264,10 @@ clientScene.on('message', async ctx=>{
 
   if (!(await isCaptchaNeeded(ctx))) return;
 
-  if (ctx.message?.text !== ctx.scene.state.captchaAnswer) { ctx.replyWithTitle("WRONG_CAPTCHA");return sendCaptcha(ctx);}
+  if (ctx.message?.text !== ctx.scene.state.captchaAnswer && ctx.message?.text !== store.getCaptcha(ctx.from?.id.toString())) { ctx.replyWithTitle("WRONG_CAPTCHA");return sendCaptcha(ctx);}
 
+  store.setCaptcha(ctx.from?.id, undefined);
+  
   await connection.query('update users set is_captcha_needed = false where id = $1', [ctx.from?.id])
     .then(res=>{
       ctx.replyWithTitle('CAPTCHA_SUCCESS');
@@ -232,19 +278,20 @@ clientScene.on('message', async ctx=>{
 
     });
 
-  if (checkSubscription(ctx, process.env.CHAT_ID)) {
+  if (!await checkSubscription(ctx, process.env.CHAT_ID)) return ctx.scene.reenter();
+  
+  const userObj = ctx.scene.state.userObj;
 
-    const userObj = ctx.scene.state.userObj;
+  const name = getUserName(ctx);
 
-    const name = getUserName(ctx);
+  const link = ctx.getTitle('REFERAL_LINK', [ctx?.from?.id], 'md2')
 
-    const link = `https://t.me/METABUNNY_bot/?start=botuser-${ctx?.from?.id}`;
+  await ctx.replyWithVideoNote(ctx.getTitle('VIDEO_NOTE_GREETING_ID')).catch(e=>{});
 
-    return await ctx.replyWithKeyboard(ctx.getTitle("HOME_MENU_GREETING", [name,userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ]),{name: 'main_keyboard', args: [userObj?.user_id]});
-
-  }
-
-  return ctx.scene.reenter();
+  return await ctx.replyWithKeyboard("HOME_MENU_GREETING", 
+    {name: 'main_keyboard', args: [userObj?.user_id]},  
+    [name,userObj?.referals ?? 0, userObj?.private_referals ?? 0, userObj?.balance ?? 0,  link ],
+    'md2');
 
 });
 
