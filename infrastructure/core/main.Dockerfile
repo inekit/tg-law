@@ -49,12 +49,6 @@ FROM prepare_deps as work
 
 COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
 [    \
-    "bin/project-migration-run.sh", \
-    "${APP_PATH}/bin/project-migration-run.sh" \
-]
-
-COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
-[    \
     "Titles/", \
     "${APP_PATH}/Titles" \
 ]
