@@ -2,7 +2,7 @@
   "scripts": {
     "start": "npm run debug:env && npm run migration:run && npm run start:prod",
     "start:prod": "node ./src",
-    "migration:run": "typeorm migration:run --dataSource ./migrations/data-source.js",
+    "migration:run": "cd migrations && typeorm migration:run --dataSource ./data-source.js",
     "migration:generate": "typeorm migration:generate --dataSource ./migrations/data-source.js --outputJs ./migrations/migrations/mg1",
     "start:dev": "node --require dotenv/config ./src",
     "typeorm:dev": "node --require ts-node/register --require dotenv/config ./node_modules/typeorm/cli.js --dataSource ./migrations/data-source.js",

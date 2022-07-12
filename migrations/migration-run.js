@@ -15,7 +15,7 @@ AppDataSource
       .catch(error=>{
         console.log('env-test error:',error);
       });
-
-  }).catch((err)=>{
-    console.error('error init', err);
+  })
+  .catch((err)=>{
+     console.error('error init', err);
   });
