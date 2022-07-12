@@ -1,7 +1,8 @@
-const  EntitySchema = require("typeorm").EntitySchema;
+var EntitySchema = require("typeorm").EntitySchema;
+
 module.exports = new EntitySchema({
-    name: "User",
-    tableName: "users",
+    name: "User", 
+    tableName: "users", 
     columns: {
         id: {
             primary: true,
@@ -15,6 +16,11 @@ module.exports = new EntitySchema({
             type: "boolean",
             nullable: false,
             default: true,
+        },
+        captcha_request_datetime: {
+            type: "timestamp",
+            nullable: false,
+            default: () => "CURRENT_TIMESTAMP",
         },
         is_subscribed: {
             type: "boolean",
@@ -36,7 +42,7 @@ module.exports = new EntitySchema({
             nullable: true,
 
         }
-
+        
     },
     relations: {
         referer: {
