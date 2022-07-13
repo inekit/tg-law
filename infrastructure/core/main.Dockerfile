@@ -43,7 +43,7 @@ COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
 
 FROM prepare_base as prepare_deps
 
-RUN npm ci
+RUN npm ci --only=prod
 
 FROM prepare_deps as work
 
