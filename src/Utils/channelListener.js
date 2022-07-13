@@ -1,5 +1,5 @@
 const { Telegraf, Composer } = require('telegraf');
-const tOrmCon = require("../db/data-source");
+const tOrmCon = require("../db/connection");
 
 module.exports = Telegraf.on('chat_member', Telegraf.optional(
 

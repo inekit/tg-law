@@ -1,5 +1,5 @@
 const store = require("../store")
-const tOrmCon = require("../db/data-source")
+const tOrmCon = require("../db/connection")
 const generateCaptcha = require("./generateCaptcha")
 
 module.exports = async function sendCaptcha(ctx, userId){

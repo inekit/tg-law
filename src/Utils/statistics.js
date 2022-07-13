@@ -1,4 +1,4 @@
-const tOrmCon = require("../db/data-source");
+const tOrmCon = require("../db/connection");
 
 class Statistics {
 

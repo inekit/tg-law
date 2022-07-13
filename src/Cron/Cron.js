@@ -1,5 +1,5 @@
 const cron = require('node-cron')
-const tOrmCon = require("../db/data-source");
+const tOrmCon = require("../db/connection");
 const broadCast = require('../Utils/broadCast')
 const sendCaptcha = require('../Utils/sendCaptcha')
 
@@ -24,8 +24,8 @@ module.exports = class Cron {
 			console.log(e)
 		}))?.map(el=>el.id)
 
-		broadCast({users: usersIds, callback: (userId)=>{
-			sendCaptcha(this.ctx,userId)
+		broadCast({users: usersIds, callback: async (userId)=>{
+			await sendCaptcha(this.ctx,userId)
 		}})
 
 	}

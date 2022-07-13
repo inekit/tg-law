@@ -1,4 +1,4 @@
-const tOrmCon = require("../db/data-source");
+const tOrmCon = require("../db/connection");
 
 
 module.exports = (tgId, can_update_admins)=>new Promise(async (resolve, reject)=>{
