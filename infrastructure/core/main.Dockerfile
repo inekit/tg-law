@@ -49,6 +49,12 @@ FROM prepare_deps as work
 
 COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
 [    \
+    "data-source.js", \
+    "${APP_PATH}/" \
+]
+
+COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
+[    \
     "Titles/", \
     "${APP_PATH}/Titles" \
 ]
