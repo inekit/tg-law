@@ -61,12 +61,6 @@ COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
 
 COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
 [    \
-    "migrations/", \
-    "${APP_PATH}/migrations" \
-]
-
-COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
-[    \
     "src/", \
     "${APP_PATH}/src" \
 ]
