@@ -7,8 +7,8 @@ class Payments{
 
         const apiKey = process.env.TONWEB_API_KEY ?? "be4d286177a77090f7ad865701ca9345bc71f893bd2950b9b97f2a9bbc89c319"; 
 
-        const apiAddr = //process.env.NODE_ENV === "production" ? 
-        // "https://testnet.toncenter.com/api/v2/jsonRPC" //: 
+        const apiAddr = process.env.NODE_ENV === "production" ? 
+         "https://testnet.toncenter.com/api/v2/jsonRPC" : 
          "https://toncenter.com/api/v2/jsonRPC";
 
         this.walletAddr = process.env.WALLET_ADDR;
@@ -61,7 +61,7 @@ class Payments{
 
 
         const isPayed = !!(checkingInfo.findIndex(({comment, sum, destination, source})=> {
-            console.log(this.#compareComment(id, comment), destination  === this.walletAddr, sum >= orderSum, source===customerAddr)
+            console.log(this.#compareComment(id, comment), destination  === this.walletAddr, parseInt(sum) >= parseInt(orderSum), source===customerAddr)
             return (this.#compareComment(id, comment) && destination  === this.walletAddr && sum >= orderSum && source===customerAddr)
         }
         )+1)
