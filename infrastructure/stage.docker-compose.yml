@@ -2,11 +2,11 @@
 version: "3.8"
 services:
   core:
-    image: "dr.metafora.dev/meta-forest/bot-subscription-checker/core/stage:latest"
+    image: "dr.metafora.dev/meta-forest/nft-seller/core/stage:latest"
     networks:
       metafora:
         aliases:
-          - meta-forest-bot-subscription-checker-core
+          - meta-forest-nft-seller-core
 
 networks:
   metafora:

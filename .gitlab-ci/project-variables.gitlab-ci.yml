@@ -1,5 +1,5 @@
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
   PROJECT_ID: "meta-forest"
-  SUBPROJECT_ID: "bot-subscription-checker"
+  SUBPROJECT_ID: "nft-seller"
   FULL_PROJECT_ID: "${PROJECT_ID}-${SUBPROJECT_ID}"

@@ -2,21 +2,22 @@
 version: "3.8"
 services:
   core:
-    image: "dr.metafora.dev/meta-forest/bot-subscription-checker/core/production:latest"
+    image: "dr.metafora.dev/meta-forest/nft-seller/core/production:latest"
     environment:
       - "DB_HOST=172.18.0.1"
-      - "DB_USER=meta-forest-bot-subscription-checker"
-      - "DB_DATABASE=meta-forest-bot-subscription-checker"
+      - "DB_USER=meta-forest-nft-seller"
+      - "DB_DATABASE=meta-forest-nft-seller"
       - "DB_PORT=5432"
-      - "DB_PASSWORD=${META_FOREST_BOT_SUBSCRIPTION_CHECKER_DB_PASSWORD}"
-      - "BOT_TOKEN=${META_FOREST_BOT_SUBSCRIPTION_CHECKER_BOT_TOKEN}"
-      - "CHAT_ID=${META_FOREST_BOT_SUBSCRIPTION_CHECKER_CHAT_ID}"
-      - "ADD_CHAT_ID=${META_FOREST_BOT_SUBSCRIPTION_CHECKER_ADD_CHAT_ID}"
-      - "PRIVATE_CHAT_ID=${META_FOREST_BOT_SUBSCRIPTION_CHECKER_PRIVATE_CHAT_ID}"
+      - "DB_PASSWORD=${META_FOREST_NFT_SELLER_DB_PASSWORD}"
+      - "BOT_TOKEN=${META_FOREST_NFT_SELLER_BOT_TOKEN}"
+      - "TONWEB_API_KEY=${META_FOREST_NFT_SELLER_TONWEB_API_KEY}"
+      - "CIPHER_SALT=${META_FOREST_NFT_SELLER_CIPHER_SALT}"
+      CIPHER_SALT
+
     networks:
       metafora:
         aliases:
-          - meta-forest-bot-subscription-checker-core
+          - meta-forest-nft-seller-core
 
 networks:
   metafora:

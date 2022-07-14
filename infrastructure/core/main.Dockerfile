@@ -5,7 +5,7 @@ ARG CI_COMMIT_BRANCH=undefined
 
 ENV DEBIAN_FRONTEND="noninteractive" \
     PROJECT="meta-forest" \
-    SUBPROJECT="bot-subscription-checker" \
+    SUBPROJECT="nft-seller" \
     SERVICE="core" \
     CI_COMMIT_BRANCH="${CI_COMMIT_BRANCH}" \
     CHANNEL="${CHANNEL}"

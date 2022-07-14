@@ -2,11 +2,11 @@
 version: "3.8"
 services:
   core:
-    image: "dr.metafora.dev/meta-forest/bot-subscription-checker/core/none:latest"
+    image: "dr.metafora.dev/meta-forest/nft-seller/core/none:latest"
     pull_policy: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.meta-forest-bot-subscription-checker-core.loadbalancer.server.port=3000"
+      - "traefik.http.services.meta-forest-nft-seller-core.loadbalancer.server.port=3000"
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -25,29 +25,28 @@ services:
           memory: 128M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.services.meta-forest-bot-subscription-checker-core.loadbalancer.server.port=3000"
+        - "traefik.http.services.meta-forest-nft-seller-core.loadbalancer.server.port=3000"
     environment:
       - DB_DATABASE
       - DB_HOST
       - DB_PORT
       - DB_PASSWORD
       - DB_USER
+      ##
       - BOT_TOKEN
-      - CHAT_ID
-      - ADD_CHAT_ID
-      - PRIVATE_CHAT_ID
+      - TONWEB_API_KEY
+      - CIPHER_SALT
+
     networks:
       meta-forest:
         aliases:
-          - meta-forest-bot-subscription-checker-core
-      meta-forest-bot-subscription-checker:
+          - meta-forest-nft-seller-core
+      meta-forest-nft-seller:
         aliases:
-          - meta-forest-bot-subscription-checker-core
+          - meta-forest-nft-seller-core
       meta-forest_ext:
         aliases:
-          - meta-forest-bot-subscription-checker-core
-
-
+          - meta-forest-nft-seller-core
 
 networks:
 
@@ -55,9 +54,9 @@ networks:
     external: true
     name: meta-forest
 
-  meta-forest-bot-subscription-checker:
+  meta-forest-nft-seller:
     external: true
-    name: meta-forest-bot-subscription-checker
+    name: meta-forest-nft-seller
 
   meta-forest_ext:
     external: true

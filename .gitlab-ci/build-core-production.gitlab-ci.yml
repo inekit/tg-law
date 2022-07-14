@@ -5,7 +5,7 @@ build-core-production:
     - docker
   environment:
     name: production-build-core
-    url: https://bot-subscription-checker.meta-forest.stage.dev.metafora.dev
+    url: https://nft-seller.meta-forest.stage.dev.metafora.dev
   services:
     - docker:dind
   variables:
