@@ -12,8 +12,6 @@ services:
       - "BOT_TOKEN=${META_FOREST_NFT_SELLER_BOT_TOKEN}"
       - "TONWEB_API_KEY=${META_FOREST_NFT_SELLER_TONWEB_API_KEY}"
       - "CIPHER_SALT=${META_FOREST_NFT_SELLER_CIPHER_SALT}"
-      CIPHER_SALT
-
     networks:
       metafora:
         aliases:
