@@ -5,6 +5,8 @@ const  {SnakeNamingStrategy} = require('typeorm-naming-strategies');
 const User = require('./src/db/entity/User');
 const Admin  = require('./src/db/entity/Admin');
 const Statistics  = require('./src/db/entity/Statistics');
+const Nft  = require('./src/db/entity/Nft');
+const Order  = require('./src/db/entity/Order');
 
 const { DataSource } = require('typeorm');
 
@@ -24,7 +26,7 @@ const AppDataSource = new DataSource({
   password: DB_PASSWORD,
   database: DB_DATABASE,
   entities: [
-    User, Admin, Statistics
+    User, Admin, Statistics, Nft, Order
   ],
   synchronize: false,
   migrationsTableName: "custom_migration_table",

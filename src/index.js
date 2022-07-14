@@ -1,10 +1,7 @@
 const { Telegraf, session } = require("telegraf");
-const { readFileSync } = require("fs");
 const stages = require("./stages");
 const shortcuts = require("telegraf-steps-engine/shortcuts/shortcuts");
 const middlewares = require("telegraf-steps-engine/middlewares/middlewares");
-const channelListener = require("./Utils/channelListener");
-const Cron = require("./Cron/Cron");
 
 const allowed_updates = ["message", "callback_query", "chat_member"];
 const TOKEN =
@@ -22,7 +19,7 @@ console.log('started');
 
     const ctx = {...bot.context, telegram: bot.telegram };
 
-    bot.use(channelListener, session(),
+    bot.use(session(),
         /*(new LocalSession({
            database: 'PublicStorage/sessions.json',
            storage: LocalSession.storageFileAsync,
@@ -35,7 +32,7 @@ console.log('started');
         dropPendingUpdates: true,
     });
 
-    new Cron(ctx)
+    //new Cron(ctx)
 
     /*
     if (process.env.NODE_ENV === "production") {

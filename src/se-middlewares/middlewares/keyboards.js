@@ -49,9 +49,14 @@ exports.main_keyboard = (ctx,isAdmin) => {
 
 	const buttons = [
 		[ctx.getTitle('BUTTON_BACK_USER')],
-		[ctx.getTitle('BUTTON_ADDITIONAL_TASKS')],
-		[ctx.getTitle('BUTTON_RULES')],
-		[ctx.getTitle('BUTTON_FREE_NFT')],
+		[ctx.getTitle('BUTTON_FAQ')],
+		[ctx.getTitle('BUTTON_BUY_NFT')],
+		[ctx.getTitle('BUTTON_ENTER_GROUP')],
+		[ctx.getTitle('BUTTON_CHANGE_ADDRESS')],
+		[ctx.getTitle('HELP_MODE')],
+		[ctx.getTitle('BUTTON_ABOUT')],
+
+
 	]
 
     if (isAdmin) buttons.push([ 

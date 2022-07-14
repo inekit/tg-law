@@ -3,9 +3,7 @@ const titles = require('telegraf-steps-engine/middlewares/titles')
 const main_menu_button = 'admin_back_keyboard'
 const tOrmCon = require("../db/connection");
 const noneListener = new Composer(),  addListener = new Composer(), captchaListener = new Composer(),  userIdListener = new Composer();
-const broadCast = require('../Utils/broadCast')
 const adminScene = new WizardScene('adminScene', noneListener, addListener, captchaListener, userIdListener)
-const sendCaptcha = require('../Utils/sendCaptcha')
 
 adminScene.enter(async ctx=>{
     const connection = await tOrmCon
@@ -27,100 +25,7 @@ adminScene.enter(async ctx=>{
 
 adminScene.hears(titles.getValues('BUTTON_CHANGE_TEXT'), ctx => ctx.scene.enter('changeTextScene', { main_menu_button }))
 
-adminScene.hears(titles.getValues('BUTTON_CAPTCHA'), async ctx => {
 
-    await ctx.replyWithKeyboard('CAPTCHA_ACTIONS', 'captcha_actions_keyboard');
-
-    ctx.wizard.selectStep(2);
-})
-
-captchaListener.action('send_captcha', async ctx=>{
-    await ctx.answerCbQuery().catch(console.log);
-
-    const connection = await tOrmCon
-
-    let usersIds = (await connection.query(
-        `SELECT u.id FROM users u left join admins a on a.user_id = u.id where a.user_id isnull`)
-    .catch((e)=>{
-        console.log(e)
-        ctx.replyWithTitle("DB_ERROR")
-    }))?.map(el=>el.id)
-
-    broadCast({users: usersIds, callback: async (userId)=>{
-        await sendCaptcha(ctx,userId)
-    }})
-
-    await ctx.replyWithTitle("CAPTCHA_BROADCAST_SUCCESS");
-
-    await ctx.scene.reenter();
-})
-
-captchaListener.action('cancel_captcha', async ctx=>{
-    await ctx.answerCbQuery().catch(console.log);
-
-    await ctx.replyWithTitle('ENTER_CAPTCHA_ID');
-
-    ctx.wizard.next();
-
-})
-
-userIdListener.on('message', async ctx=>{
-
-    ctx.scene.state.userId = ctx.message?.forward_from?.id ?? ctx.message?.text;
-
-    if (!ctx.scene.state.userId) return ctx.replyWithTitle('NO_ID');
-
-    const connection = await tOrmCon
-
-    await connection.query('update users set is_captcha_needed = false where id = $1', [ctx.scene.state.userId])
-    .then(res=>{
-        ctx.replyWithTitle('CAPTCHA_REMOVE_SUCCESS');
-    })
-    .catch(e=>{
-        console.log(e)
-        ctx.replyWithTitle('DB_ERROR');
-    
-    })
-
-})
-
-
-
-
-adminScene.hears(titles.getValues('BUTTON_ADD'), ctx => {
-    ctx.replyWithTitle('ENTER_ADD_TEXT');
-
-    console.log(1)
-    ctx.wizard.selectStep(1);
-})
-
-addListener.on('message', async ctx=>{
-
-    if (!ctx.message?.text) return ctx.replyWithTitle('NO_TEXT');
-
-    ctx.wizard.state.add_text = ctx.message.text;
-
-    await ctx.replyWithKeyboard('CONFIRM_ADDING_ADD', 'confirm_keyboard');
-})
-
-addListener.action('confirm', async ctx=>{
-    await ctx.answerCbQuery().catch(console.log);
-
-    const connection = await tOrmCon
-
-    let usersIds = (await connection.query(
-            `SELECT u.id FROM users u left join admins a on a.user_id = u.id where a.user_id isnull`)
-        .catch((e)=>{
-            console.log(e)
-            ctx.replyWithTitle("DB_ERROR")
-        }))?.map(el=>el.id)
-
-    broadCast({users: usersIds, callback: (userId)=>{
-        ctx.telegram.sendMessage(userId, ctx.wizard.state.add_text).catch(console.log)
-    }})
-
-    ctx.scene.reenter()
-})
 
 adminScene.hears(titles.getValues('BUTTON_ADMINS'), ctx => ctx.scene.enter('adminsScene', { main_menu_button }))
 

@@ -6,6 +6,9 @@ const stat = require("./Utils/statistics")
 const mainStage = new Stage([ 
 	
 	require('./scenes/mainScene'),
+	require('./scenes/clientScenes/buyScene'),
+	require('./scenes/clientScenes/verificationScene'),
+
 	require('./scenes/adminScene'),
 	require('./scenes/adminScenes/adminsScene'),
 
@@ -27,11 +30,10 @@ mainStage.start(async ctx => {
 mainStage.hears(titles.getValues('BUTTON_BACK_ADMIN'), ctx => ctx.scene.enter('adminScene',))
 mainStage.hears(titles.getValues('BUTTON_ADMIN_MENU'), ctx => ctx.scene.enter('adminScene',))
 mainStage.hears(titles.getValues('BUTTON_BACK_USER'), ctx => ctx.scene.enter('clientScene',))
-mainStage.hears(titles.getValues('BUTTON_ABOUT'), ctx => ctx.replyWithKeyboard("HOME_MENU"))
 
 
 
 const stages = new Composer()
-stages.use(mainStage.middleware())
+stages.use(Telegraf.chatType('private', mainStage.middleware()))
 
 module.exports = stages

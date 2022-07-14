@@ -130,7 +130,7 @@ addHandler = (handler) => {
     ])
   }
 
-  enterMiddleware() {
+enterMiddleware() {
   const replyFirst = (ctx,next)=>{
     
     ctx.state.name = ctx.scene?.options?.defaultSession?.current
@@ -140,12 +140,9 @@ addHandler = (handler) => {
   }
   const enterAndReply=async (ctx,next)=>{
     await this.enterHandler(ctx)
-    ctx.state.name = ctx.scene?.options?.defaultSession?.current
-
     //await replyFirst(ctx,next);
   }
   if (this.enterHandler.toString().length === 21) this.enterHandler = (async (ctx,next) => replyFirst())
-    return Composer.compose([this.middleware(),enterAndReply])
+    return Composer.compose([enterAndReply,this.middleware()])
   }
 }
-

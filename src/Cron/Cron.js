@@ -8,7 +8,7 @@ module.exports = class Cron {
 	constructor(ctx) {
 
 		this.ctx = ctx
-		this.ttlJob = cron.schedule(`0 10 * * *`, this.broadCastCaptcha)
+		//this.ttlJob = cron.schedule(`0 10 * * *`, this.broadCastCaptcha)
 
 		//this.broadCastCaptcha()
 		

@@ -10,7 +10,7 @@
     "migration:dev:generate": "npm run typeorm:dev -- --outputJs ./src/db/migrations/mg1 migration:generate"
   },
   "moduleResolution": "node",
-  "name": "tg-subscription",
+  "name": "nft-seller",
   "version": "1.0.0",
   "main": "index.js",
   "repository": {
@@ -25,6 +25,7 @@
   "homepage": "https://gitlab.com/metafora-dev/friends/meta-forest/bot-subscription-checker#readme",
   "description": "",
   "dependencies": {
+    "crypto": "^1.0.1",
     "moment": "^2.29.4",
     "node": "^16.13.2",
     "node-cron": "^3.0.1",
@@ -33,6 +34,7 @@
     "svg-png-converter": "^0.0.9",
     "telegraf": "^4.8.5",
     "telegraf-steps-engine": "file:src/se-middlewares",
+    "tonweb": "^0.0.50",
     "ts-node": "^10.8.2",
     "typeorm": "^0.3.6",
     "typeorm-naming-strategies": "^4.1.0"

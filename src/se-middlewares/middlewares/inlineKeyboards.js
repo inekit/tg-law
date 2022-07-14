@@ -6,13 +6,21 @@ const { inlineKeyboard } = Markup
 
 
 
-exports.url_check_keyboard = (ctx, linkTitle ) => {
+exports.url_keyboard = (ctx, link ) => {
 
-    console.log(linkTitle)
     const keyboard = inlineKeyboard([
-        urlButton(ctx.getTitle('LINK_NAME'), ctx.getTitle(linkTitle)),
-        callbackButton(ctx.getTitle("BUTTON_CHECK_SUBSCRIBE"), `i_subscribed_${ctx.getTitle(linkTitle)}`),
-        callbackButton(ctx.getTitle("BUTTON_BACK"), 'back'),
+        urlButton(ctx.getTitle('GROUP_LINK_NAME'), link),
+    ], { columns: 1 })
+
+    return keyboard
+}
+
+exports.submit_payment_keyboard = (ctx, link ) => {
+
+    console.log(link)
+    const keyboard = inlineKeyboard([
+        urlButton(ctx.getTitle('LINK_NAME'), link),
+        callbackButton(ctx.getTitle("BUTTON_CHECK_SUBSCRIBE"), `submit_payment`),
 
     ], { columns: 1 })
 
@@ -94,7 +102,6 @@ exports.add_delete_keyboard = (ctx ) => {
 
     return keyboard
 }
-
 
 
 

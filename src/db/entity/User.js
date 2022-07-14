@@ -12,46 +12,16 @@ module.exports = new EntitySchema({
             type: "date",
             nullable: true
         },
-        is_captcha_needed: {
-            type: "boolean",
-            nullable: false,
-            default: true,
+        wallet_arrd: {
+            type: "varchar",
+            length: 255,
+            nullable: true
         },
-        captcha_request_datetime: {
-            type: "timestamp",
+        nft_count: {
+            type: "int",
             nullable: false,
-            default: () => "CURRENT_TIMESTAMP",
-        },
-        is_subscribed: {
-            type: "boolean",
-            nullable: false,
-            default: false,
-        },
-        is_subscribed_private: {
-            type: "boolean",
-            nullable: false,
-            default: false,
-        },
-        is_subscribed_add: {
-            type: "boolean",
-            nullable: false,
-            default: false,
-        },
-        referer_id: {
-            type: "bigint",
-            nullable: true,
-
+            default: 0
         }
         
-    },
-    relations: {
-        referer: {
-            target: "User",
-            type: "one-to-many",
-            cascade: true,
-            joinColumn: true,
-            onDelete: 'set null',
-            onUpdate: 'set null',
-        },
     }
 });
