@@ -29,7 +29,6 @@ class Payments{
     }
 
     #compareComment(id, comment){
-        console.log(id, comment, this.encodeComment(id))
         return comment === this.encodeComment(id);
 
     }
@@ -61,8 +60,8 @@ class Payments{
 
 
         const isPayed = !!(checkingInfo.findIndex(({comment, sum, destination, source})=> {
-            console.log(this.#compareComment(id, comment), destination  === this.walletAddr, parseInt(sum) >= parseInt(orderSum), source===customerAddr)
-            return (this.#compareComment(id, comment) && destination  === this.walletAddr && sum >= orderSum && source===customerAddr)
+            console.log(sum, orderSum, this.#compareComment(id, comment), destination  === this.walletAddr, parseInt(sum) >= parseInt(orderSum), source===customerAddr)
+            return (this.#compareComment(id, comment) && destination  === this.walletAddr && parseInt(sum) >= parseInt(orderSum) && source===customerAddr)
         }
         )+1)
         
