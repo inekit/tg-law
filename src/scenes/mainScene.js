@@ -7,8 +7,6 @@ const tOrmCon = require("../db/connection");
 const clientScene = new BaseScene('clientScene')
 .enter(async ctx=>{
 
-  const { edit, isNewUser } = ctx.scene.state;
-
   let userObj = ctx.scene.state.userObj = await getUser(ctx);
 
   const name = getUserName(ctx);

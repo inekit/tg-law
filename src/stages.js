@@ -15,9 +15,9 @@ const mainStage = new Stage([
 ], {default: 'clientScene'})
 
 
-mainStage.on('photo',ctx=>{
+/*mainStage.on('photo',ctx=>{
 	console.log(ctx.message.photo)
-})
+})*/
 
 //mainStage.on('video_note',ctx=>console.log(ctx.message))
 

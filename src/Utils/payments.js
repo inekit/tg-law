@@ -1,14 +1,11 @@
 const TonWeb = require('tonweb');
 var crypto = require('crypto');
-var salt = "PVI8Syy6uUEbFr13M0WkQ962zNIHk40F8Iy+vVcrEhvUP3sjNA80w2/UR2civUMxdx78QI9h00zp9zEfW2FuetkIWuseYdJS7ty58b/g69gYzc5fN2MyLQPjruYRsZO19vLbaLU9rSN1inbB+1gYGfjZknrOlX9/x1Ek7bLMa+0="
-//crypto.randomBytes(128).toString('base64');
-
-//'9359567dda15fc5bf3515334ff56ad131518d1eb80e215d8855f20e91ea88c51';
+var salt = process.env.CIPHER_SALT  //crypto.randomBytes(128).toString('base64');
 
 class Payments{
     constructor(){
 
-        const apiKey = process.env.API_KEY ?? "be4d286177a77090f7ad865701ca9345bc71f893bd2950b9b97f2a9bbc89c319"; 
+        const apiKey = process.env.TONWEB_API_KEY ?? "be4d286177a77090f7ad865701ca9345bc71f893bd2950b9b97f2a9bbc89c319"; 
 
         const apiAddr = //process.env.NODE_ENV === "production" ? 
         // "https://testnet.toncenter.com/api/v2/jsonRPC" //: 
