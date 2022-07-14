@@ -8,8 +8,8 @@ class Payments{
         const apiKey = process.env.TONWEB_API_KEY ?? "be4d286177a77090f7ad865701ca9345bc71f893bd2950b9b97f2a9bbc89c319"; 
 
         const apiAddr = process.env.NODE_ENV === "production" ? 
-         "https://testnet.toncenter.com/api/v2/jsonRPC" : 
-         "https://toncenter.com/api/v2/jsonRPC";
+         "https://toncenter.com/api/v2/jsonRPC" :
+         "https://testnet.toncenter.com/api/v2/jsonRPC";
 
         this.walletAddr = process.env.WALLET_ADDR;
         
