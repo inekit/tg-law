@@ -34,6 +34,7 @@ services:
       - DB_USER
       ##
       - BOT_TOKEN
+      - WALLET_ADDR
       - TONWEB_API_KEY
       - CIPHER_SALT
 
