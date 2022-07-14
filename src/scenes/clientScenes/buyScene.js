@@ -16,7 +16,7 @@ const clientScene = new CustomWizardScene('buyScene')
     ctx.scene.enter("clientScene");
   }
 
-  if (edit) return ctx.replyWithHTML(ctx.getTitle("ENTER_COUNT"), {reply_markup: {remove_keyboard: true}})
+  if (edit) return ctx.replyWithKeyboard(ctx.getTitle("ENTER_COUNT"), 'main_menu_back_keyboard')
 
   ctx.replyWithTitle("ENTER_COUNT")
   

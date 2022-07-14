@@ -10,7 +10,7 @@ const clientScene = new CustomWizardScene('verificationScene')
 
   const { edit } = ctx.scene.state;
 
-  if (edit) return ctx.replyWithHTML(ctx.getTitle("ENTER_ADDRESS"), {reply_markup: {remove_keyboard: true}})
+  if (edit) return ctx.replyWithKeyboard(ctx.getTitle("ENTER_ADDRESS"), 'main_menu_back_keyboard')
   
   await ctx.replyWithKeyboard(ctx.getTitle("ADD_ADDRESS_TITLE"),
   {name: 'custom_keyboard', args: [['BUTTON_ADD_ADDRESS'],['add_address']]});
