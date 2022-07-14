@@ -30,11 +30,11 @@ const clientScene = new CustomWizardScene('buyScene')
 
   const sumCounter = count === 10 ? 0.9  :  count >= 5 ? 0.95  :  1;
 
-  let price = 0.100;
+  let price = 100;
 
   let sum = ctx.scene.state.sum = price * sumCounter * count;
 
-  sum = ctx.scene.state.userObj?.nft_count === 0 ? sum - 0.040 : sum;
+  sum = ctx.scene.state.userObj?.nft_count === 0 ? sum - 40 : sum;
 
   sum = Math.round(sum * 100) / 100;
 
