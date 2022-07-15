@@ -33,6 +33,8 @@ console.log("started");
       .query("update users set username = $1 where id = $2", [username, u.id])
       .catch(console.error);
   }
+
+  bot.stop();
 })();
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
