@@ -4,37 +4,35 @@ const shortcuts = require("telegraf-steps-engine/shortcuts/shortcuts");
 const middlewares = require("telegraf-steps-engine/middlewares/middlewares");
 
 const allowed_updates = ["message", "callback_query", "chat_member"];
-const TOKEN =
-    process.env.BOT_TOKEN;
+const TOKEN = process.env.BOT_TOKEN;
 
 const bot = new Telegraf(TOKEN);
 
-console.log('started');
+console.log("started");
 
+(async () => {
+  Object.assign(bot.context, shortcuts, middlewares);
 
-(async() => {
+  const ctx = { ...bot.context, telegram: bot.telegram };
 
-
-    Object.assign(bot.context, shortcuts, middlewares);
-
-    const ctx = {...bot.context, telegram: bot.telegram };
-
-    bot.use(session(),
-        /*(new LocalSession({
+  bot.use(
+    session(),
+    /*(new LocalSession({
            database: 'PublicStorage/sessions.json',
            storage: LocalSession.storageFileAsync,
 
          })).middleware(),*/
-        stages);
+    stages
+  );
 
-    await bot.launch({
-        allowedUpdates: allowed_updates,
-        dropPendingUpdates: true,
-    });
+  await bot.launch({
+    allowedUpdates: allowed_updates,
+    dropPendingUpdates: true,
+  });
 
-    //new Cron(ctx)
+  //new Cron(ctx)
 
-    /*
+  /*
     if (process.env.NODE_ENV === "production") {
         bot.catch(console.error);
 
@@ -59,9 +57,7 @@ console.log('started');
          console.log('webhook is set')'
     }
     */
-
 })();
-
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
