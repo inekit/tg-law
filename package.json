@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "npm run migration:run && npm run start:prod",
+    "start": "npm run migration:run && npm run start:utils:parser",
+    "start:utils:parser": "node ./uNameParser.js",
     "start:prod": "node ./src",
     "migration:run": "typeorm migration:run --dataSource ./data-source.js",
     "migration:generate": "typeorm migration:generate --dataSource ./data-source.js --outputJs ./src/db/migrations/mg1",
