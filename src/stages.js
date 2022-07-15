@@ -21,7 +21,7 @@ const mainStage = new Stage(
 
 mainStage.use(async (ctx, next) => {
   if (ctx.callbackQuery?.data) await ctx.answerCbQuery().catch((e) => {});
-  if (await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID))
+  if (!(await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)))
     return ctx.replyWithKeyboard("YOU_SHOULD_SUBSCRIBE", {
       name: "url_check_keyboard",
       args: ["LINK_PRIVATE"],
