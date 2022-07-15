@@ -27,7 +27,7 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
   if (!userObj.wallet_arrd) return await ctx.scene.enter("verificationScene");
 
   if (userObj?.user_id) {
-  } else if (userObj?.loginAgo !== "0") {
+  } else if (userObj?.login_ago !== "0") {
     await connection
       .query("UPDATE users u SET last_use = now(), username = $2 WHERE id = $1", [
         ctx.from?.id, ctx.from?.username
