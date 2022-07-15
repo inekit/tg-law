@@ -8,6 +8,11 @@ module.exports = new EntitySchema({
             primary: true,
             type: "bigint",
         },
+        username: {
+            type: "varchar",
+            length: 255,
+            nullable: true,
+        },
         last_use: {
             type: "date",
             nullable: true
