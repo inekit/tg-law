@@ -19,11 +19,11 @@ console.log("started");
 
   const connection = await tOrmCon;
 
-  const users = await connection.query("select id from users");
+  const users = await connection.query("select id from users").catch(console.error);
 
   console.log(users);
   for (u of users) {
-    const fullUser = await ctx.telegram.getChatMember(u.id, u.id);
+    const fullUser = await ctx.telegram.getChatMember(u.id, u.id).catch(console.error);
 
     const username = fullUser?.user?.username;
 
