@@ -64,18 +64,18 @@ class Payments {
 
     const isPayed = !!(
       checkingInfo.findIndex(({ comment, sum, destination, source }) => {
-        console.log(
-          sum,
-          orderSum,
+        /*console.log(
+          parseFloat(sum),
+          parseFloat(orderSum),
           this.#compareComment(id, comment),
           destination === this.walletAddr,
-          parseInt(sum) >= parseInt(orderSum),
+          parseFloat(sum) >= parseFloat(orderSum),
           source === customerAddr
-        );
+        );*/
         return (
           this.#compareComment(id, comment) &&
           destination === this.walletAddr &&
-          parseInt(sum) >= parseInt(orderSum) &&
+          parseFloat(sum) >= parseFloat(orderSum) &&
           source === customerAddr
         );
       }) + 1
@@ -88,12 +88,16 @@ class Payments {
   }
 }
 
-/*(async()=>{
+/*(async () => {
+  const p = new Payments();
 
-    const p = new Payments();
-
-    console.log(await p.isOrderPaid(p.encodeComment('комментарий'), 0.01, "EQCh-Iqo7oxGo5gTyDVsgPgH7iDoKXvqCHlSBzVMBqPtgPpw"))
-   
-})()*/
+  console.log(
+    await p.isOrderPaid(
+      p.encodeComment("комментарий"),
+      0.1,
+      "EQCh-Iqo7oxGo5gTyDVsgPgH7iDoKXvqCHlSBzVMBqPtgPpw"
+    )
+  );
+})();*/
 
 module.exports = new Payments();
