@@ -36,11 +36,11 @@ const clientScene = new CustomWizardScene("buyScene")
 
       let price = 100;
 
-      let sum = (ctx.scene.state.sum = price * sumCounter * count);
+      let sum = price * sumCounter * count;
 
       sum = ctx.scene.state.userObj?.nft_count === 0 ? sum - 40 : sum;
 
-      sum = Math.round(sum * 100) / 100;
+      sum = ctx.scene.state.sum = Math.round(sum * 100) / 100;
 
       const connection = await tOrmCon;
 
