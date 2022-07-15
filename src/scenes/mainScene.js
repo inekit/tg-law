@@ -104,6 +104,10 @@ clientScene.on("message", async (ctx) => {
 
   ctx.scene.state.helpMessage = ctx.message.text;
 
+  ctx.scene.state.message_id = ctx.message.message_id;
+
+  ctx.scene.state.chat_id = ctx.message.chat.id;
+
   ctx.replyWithKeyboard("CONFIRM", "confirm_keyboard");
 });
 clientScene.action("confirm", async (ctx) => {
