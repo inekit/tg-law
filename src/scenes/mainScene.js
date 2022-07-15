@@ -114,11 +114,20 @@ clientScene.action("confirm", async (ctx) => {
   await ctx.telegram
     .sendMessage(
       5039673361,
-      ctx.getTitle("NEW_HELP", [ctx.from.username, ctx.scene.state.helpMessage])
+      ctx.getTitle("NEW_HELP", [ctx.from.username ?? ctx.from.id, ctx.scene.state.helpMessage])
     )
     .catch((e) => {
       console.log("help guy has blocked bot");
     });
+
+  await ctx.telegram
+    .forwardMessage(
+      5039673361,
+      ctx.scene.state.chat_id,
+      ctx.scene.state.message_id
+    )
+    .catch(()=>{});
+
   ctx.scene.state.isHelpMode = false;
 });
 
