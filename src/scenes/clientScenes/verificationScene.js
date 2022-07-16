@@ -61,6 +61,14 @@ clientScene
     cb: async (ctx) => {
       const { paymentURL, amount, address } = ctx.wizard.state;
 
+      if (!address || !amount || !paymentURL) {
+        ctx.replyWithTitle("BOT_RELOADED");
+        console.error(
+          `NO_CHECK_TRANSACTION_DATA,addr=${address}, userId = ${ctx.from.id}, amount = ${amount}, url = ${paymentURL}`
+        );
+        return await ctx.scene.enter("clientScene");
+      }
+
       if (!(await Payments.isOrderPaid(ctx.from.id, amount, address)))
         return ctx.replyWithKeyboard(
           "VERIFY_AGAIN_USER_TITLE",

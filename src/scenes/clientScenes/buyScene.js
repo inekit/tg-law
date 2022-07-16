@@ -103,6 +103,9 @@ const clientScene = new CustomWizardScene("buyScene")
 
       if (!wallet_addr || !orderId || !amount || !paymentURL) {
         ctx.replyWithTitle("BOT_RELOADED");
+        console.error(
+          `NO_CHECK_TRANSACTION_DATA,addr=${wallet_addr}, orderId = ${orderId}, amount = ${amount}, url = ${paymentURL}`
+        );
         return await ctx.scene.enter("clientScene");
       }
 
