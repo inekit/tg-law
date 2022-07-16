@@ -49,7 +49,9 @@ class Payments {
   async isOrderPaid(id, orderSum, customerAddr) {
     const transactions = await this.tonweb
       .getTransactions(this.walletAddr)
-      .catch(console.log); //(new Date()).getTime()
+      .catch((e) => {
+        console.error("ERROR CHECKING TRANSACTIONS:", e);
+      }); //(new Date()).getTime()
 
     if (!transactions) return false;
 
