@@ -27,9 +27,8 @@ module.exports = class mg11657964430227 {
     await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "lootbox_count"`);
     await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "wl_count"`);
     await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "wallet_addr"`);
-    await queryRunner.query(
-      `ALTER TABLE "users" ADD "wallet_arrd" character varying(255)`
-    );
+    await queryRunner.query(`ALTER TABLE "users"
+    RENAME COLUMN "wallet_addr" TO "wallet_arrd"`);
     await queryRunner.query(
       `ALTER TABLE "admins" ADD CONSTRAINT "FK_2b901dd818a2a6486994d915a68" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE`
     );
