@@ -7,11 +7,8 @@ module.exports = class mg11657964430227 {
     await queryRunner.query(
       `ALTER TABLE "admins" DROP CONSTRAINT "FK_2b901dd818a2a6486994d915a68"`
     );
-    await queryRunner.query(
-      `ALTER TABLE "users" ADD "wallet_addr" character varying(255)`
-    );
-    await queryRunner.query(`UPDATE "users" SET "wallet_addr"="wallet_arrd"`);
-    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "wallet_arrd"`);
+    await queryRunner.query(`ALTER TABLE "users"
+    RENAME COLUMN "wallet_arrd" TO "wallet_addr"`);
     await queryRunner.query(
       `ALTER TABLE "users" ADD "wl_count" integer NOT NULL DEFAULT '0'`
     );
