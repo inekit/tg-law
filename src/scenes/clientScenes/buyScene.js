@@ -10,7 +10,7 @@ const clientScene = new CustomWizardScene("buyScene")
   .enter(async (ctx) => {
     const { edit, userObj } = ctx.scene.state;
 
-    const address = userObj?.wallet_arrd;
+    const address = userObj?.wallet_addr;
 
     if (!address) {
       ctx.replyWithTitle("NO_ADDRESS");
@@ -81,10 +81,10 @@ const clientScene = new CustomWizardScene("buyScene")
         paymentURL,
         sum: amount,
         orderId,
-        userObj: { wallet_arrd },
+        userObj: { wallet_addr },
       } = ctx.wizard.state;
 
-      if (!(await Payments.isOrderPaid(orderId, amount, wallet_arrd)))
+      if (!(await Payments.isOrderPaid(orderId, amount, wallet_addr)))
         return ctx.replyWithKeyboard(
           "ORDER_NOT_PAYED",
           { name: "submit_payment_keyboard", args: [paymentURL] },

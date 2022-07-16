@@ -24,14 +24,18 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
       });
   }
 
-  if (!userObj.wallet_arrd) return await ctx.scene.enter("verificationScene");
+  const { nft_count, lootbox_count, wl_count, wallet_addr, user_id } =
+    userObj ?? {};
 
-  if (userObj?.user_id) {
+  if (!wallet_addr) return await ctx.scene.enter("verificationScene");
+
+  if (user_id) {
   } else if (userObj?.login_ago !== "0") {
     await connection
-      .query("UPDATE users u SET last_use = now(), username = $2 WHERE id = $1", [
-        ctx.from?.id, ctx.from?.username
-      ])
+      .query(
+        "UPDATE users u SET last_use = now(), username = $2 WHERE id = $1",
+        [ctx.from?.id, ctx.from?.username]
+      )
       .catch((e) => {
         console.log(e);
         ctx.replyWithTitle("DB_ERROR");
@@ -39,8 +43,11 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
   }
 
   await ctx.replyWithKeyboard(
-    ctx.getTitle("HOME_MENU", [name, userObj?.nft_count]),
-    { name: "main_keyboard", args: [userObj?.user_id] }
+    ctx.getTitle("HOME_MENU", [name, wl_count, lootbox_count, nft_count]),
+    {
+      name: "main_keyboard",
+      args: [user_id],
+    }
   );
 });
 
@@ -115,22 +122,26 @@ clientScene.action("confirm", async (ctx) => {
 
   await ctx.replyWithTitle("MESSAGE_SEND");
 
-  await ctx.telegram
-    .sendMessage(
-      5039673361,
-      ctx.getTitle("NEW_HELP", [ctx.from.username ?? ctx.from.id, ctx.scene.state.helpMessage])
-    )
-    .catch((e) => {
-      console.log("help guy has blocked bot");
-    });
-
-  await ctx.telegram
-    .forwardMessage(
-      5039673361,
-      ctx.scene.state.chat_id,
-      ctx.scene.state.message_id
-    )
-    .catch(()=>{});
+  if (ctx.from.username)
+    await ctx.telegram
+      .sendMessage(
+        5039673361,
+        ctx.getTitle("NEW_HELP", [
+          ctx.from.username ?? ctx.from.id,
+          ctx.scene.state.helpMessage,
+        ])
+      )
+      .catch((e) => {
+        console.log("help guy has blocked bot");
+      });
+  else
+    await ctx.telegram
+      .forwardMessage(
+        5039673361,
+        ctx.scene.state.chat_id,
+        ctx.scene.state.message_id
+      )
+      .catch(() => {});
 
   ctx.scene.state.isHelpMode = false;
 });
@@ -140,7 +151,7 @@ async function getUser(ctx) {
 
   let userObj = await connection
     .query(
-      `SELECT u.id, DATE_PART('day', now() - u.last_use) login_ago,user_id, wallet_arrd, nft_count
+      `SELECT u.id, DATE_PART('day', now() - u.last_use) login_ago,user_id, wallet_addr, nft_count, lootbox_count, wl_count
       FROM users u left join admins a on a.user_id = u.id where u.id = $1 limit 1`,
       [ctx.from?.id]
     )
