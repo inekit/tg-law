@@ -71,7 +71,7 @@ clientScene
       const connection = await tOrmCon;
 
       const res = await connection
-        .query("update users set wallet_arrd = $1 where id = $2", [
+        .query("update users set wallet_addr = $1 where id = $2", [
           address,
           ctx.from.id,
         ])
