@@ -26,7 +26,6 @@ module.exports = class mg11657964430227 {
     );
     await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "lootbox_count"`);
     await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "wl_count"`);
-    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "wallet_addr"`);
     await queryRunner.query(`ALTER TABLE "users"
     RENAME COLUMN "wallet_addr" TO "wallet_arrd"`);
     await queryRunner.query(
