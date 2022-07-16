@@ -67,6 +67,12 @@ COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
     "${APP_PATH}/src" \
 ]
 
+COPY --chown="${APP_USER_NAME}:${APP_GROUP_NAME}" \
+[    \
+    "uNameParser.js", \
+    "${APP_PATH}/" \
+]
+
 WORKDIR "${APP_PATH}/"
 
 CMD ["npm","run","start"]
