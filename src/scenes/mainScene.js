@@ -17,7 +17,7 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
 
     userObj = await connection
       .getRepository("User")
-      .save({ id: ctx.from.id })
+      .save({ id: ctx.from.id, username: ctx.from.username })
       .catch(async (e) => {
         console.log(e);
         ctx.replyWithTitle("DB_ERROR");
@@ -27,10 +27,10 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
   if (!userObj.wallet_arrd) return await ctx.scene.enter("verificationScene");
 
   if (userObj?.user_id) {
-  } else if (userObj?.loginAgo !== "0") {
+  } else if (userObj?.login_ago !== "0") {
     await connection
-      .query("UPDATE users u SET last_use = now() WHERE id = $1", [
-        ctx.from?.id,
+      .query("UPDATE users u SET last_use = now(), username = $2 WHERE id = $1", [
+        ctx.from?.id, ctx.from?.username
       ])
       .catch((e) => {
         console.log(e);
@@ -104,6 +104,10 @@ clientScene.on("message", async (ctx) => {
 
   ctx.scene.state.helpMessage = ctx.message.text;
 
+  ctx.scene.state.message_id = ctx.message.message_id;
+
+  ctx.scene.state.chat_id = ctx.message.chat.id;
+
   ctx.replyWithKeyboard("CONFIRM", "confirm_keyboard");
 });
 clientScene.action("confirm", async (ctx) => {
@@ -114,11 +118,20 @@ clientScene.action("confirm", async (ctx) => {
   await ctx.telegram
     .sendMessage(
       5039673361,
-      ctx.getTitle("NEW_HELP", [ctx.from.username, ctx.scene.state.helpMessage])
+      ctx.getTitle("NEW_HELP", [ctx.from.username ?? ctx.from.id, ctx.scene.state.helpMessage])
     )
     .catch((e) => {
       console.log("help guy has blocked bot");
     });
+
+  await ctx.telegram
+    .forwardMessage(
+      5039673361,
+      ctx.scene.state.chat_id,
+      ctx.scene.state.message_id
+    )
+    .catch(()=>{});
+
   ctx.scene.state.isHelpMode = false;
 });
 
