@@ -30,7 +30,7 @@ module.exports = new EntitySchema({
     lootbox_count: {
       type: "int",
       nullable: false,
-      default: 1,
+      default: 0,
     },
     nft_count: {
       type: "int",
