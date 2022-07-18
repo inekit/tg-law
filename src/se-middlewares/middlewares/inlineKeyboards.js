@@ -14,7 +14,6 @@ exports.url_keyboard = (ctx, link) => {
 };
 
 exports.url_check_keyboard = (ctx, linkTitle) => {
-  console.log(linkTitle);
   const keyboard = inlineKeyboard(
     [
       urlButton(ctx.getTitle("PRIVATE_LINK_NAME"), ctx.getTitle(linkTitle)),
@@ -29,8 +28,7 @@ exports.url_check_keyboard = (ctx, linkTitle) => {
   return keyboard;
 };
 
-exports.submit_payment_keyboard = (ctx, link) => {
-  console.log(link);
+exports.submit_payment_keyboard = (ctx, link, isSkip) => {
   const keyboard = inlineKeyboard(
     [
       urlButton(ctx.getTitle("LINK_NAME"), link),
@@ -38,6 +36,11 @@ exports.submit_payment_keyboard = (ctx, link) => {
     ],
     { columns: 1 }
   );
+
+  if (isSkip)
+    keyboard.reply_markup.inline_keyboard.push([
+      callbackButton(ctx.getTitle("BUTTON_SKIP"), "drop_order"),
+    ]);
 
   return keyboard;
 };

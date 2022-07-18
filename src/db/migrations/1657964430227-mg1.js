@@ -13,7 +13,7 @@ module.exports = class mg11657964430227 {
       `ALTER TABLE "users" ADD "wl_count" integer NOT NULL DEFAULT '0'`
     );
     await queryRunner.query(
-      `ALTER TABLE "users" ADD "lootbox_count" integer NOT NULL DEFAULT '0'`
+      `ALTER TABLE "users" ADD "lootbox_count" integer NOT NULL DEFAULT '1'`
     );
     await queryRunner.query(
       `ALTER TABLE "admins" ADD CONSTRAINT "FK_2b901dd818a2a6486994d915a68" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE cascade ON UPDATE cascade`

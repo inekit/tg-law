@@ -6,25 +6,81 @@ const Payments = require("../../Utils/payments");
 const { titles } = require("telegraf-steps-engine");
 const tOrmCon = require("../../db/connection");
 
-const clientScene = new CustomWizardScene("buyScene")
-  .enter(async (ctx) => {
-    const { edit, userObj } = ctx.scene.state;
+const clientScene = new CustomWizardScene("buyScene").enter(async (ctx) => {
+  const { edit, userObj } = ctx.scene.state;
 
-    const address = userObj?.wallet_addr;
+  const address = userObj?.wallet_addr;
 
-    if (!address) {
-      ctx.replyWithTitle("NO_ADDRESS");
-      ctx.scene.enter("clientScene");
-    }
+  if (!address) {
+    ctx.replyWithTitle("NO_ADDRESS");
+    ctx.scene.enter("clientScene");
+  }
 
-    if (edit)
-      return ctx.replyWithKeyboard(
-        ctx.getTitle("ENTER_COUNT"),
-        "main_menu_back_keyboard"
-      );
+  const connection = await tOrmCon;
 
-    ctx.replyWithTitle("ENTER_COUNT");
+  const order = (
+    await connection
+      .query(
+        "select * from orders where customer_id = $1 and status <> 'payed'",
+        [ctx.from.id]
+      )
+      .catch(async (e) => {
+        console.error(`ERROR_GETTING_USER_ORDERS: ${ctx.from.username}: ${e}`);
+        await ctx.scene.enter("clientScene");
+      })
+  )?.[0];
+
+  if (order?.id) {
+    const {
+      link: paymentURL,
+      comment,
+      address,
+    } = await Payments.getTransferInfo(order.sum, parseInt(order.id));
+
+    ctx.scene.state.paymentURL = paymentURL;
+    ctx.scene.state.sum = order.sum;
+    ctx.scene.state.orderId = order.id;
+    await ctx.replyWithKeyboard(ctx.getTitle("."), "main_menu_back_keyboard");
+
+    await ctx.replyWithKeyboard(
+      "ORDER_CREATED_TITLE",
+      { name: "submit_payment_keyboard", args: [paymentURL, true] },
+      [order.sum, address, comment, paymentURL]
+    );
+
+    return await ctx.wizard.selectStep(1);
+  }
+
+  if (edit)
+    return ctx.replyWithKeyboard(
+      ctx.getTitle("ENTER_COUNT"),
+      "main_menu_back_keyboard"
+    );
+
+  ctx.replyWithTitle("ENTER_COUNT");
+});
+
+clientScene
+  .action("drop_order", async (ctx) => {
+    const connection = await tOrmCon;
+
+    await connection
+      .query("delete from orders where customer_id = $1", [ctx.from.id])
+      .catch(async (e) => {
+        console.error(`ERROR_DELETING_ORDER: ${ctx.from.username}: ${e}`);
+        await ctx.scene.enter("clientScene");
+      });
+
+    await ctx.replyWithTitle("DROP_ORDER_SUCCESS");
+
+    await ctx.replyWithKeyboard(
+      ctx.getTitle("ENTER_COUNT"),
+      "main_menu_back_keyboard"
+    );
+
+    return await ctx.wizard.selectStep(0);
   })
+
   .addStep({
     variable: "count",
     cb: async (ctx) => {
@@ -33,6 +89,8 @@ const clientScene = new CustomWizardScene("buyScene")
           throw new Error("NO_USER_OBJ_" + ctx.from.username);
 
         const count = (ctx.scene.state.count = parseInt(ctx.message?.text));
+
+        if (parseInt(count) != count) return;
 
         if (count > 10) return ctx.replyWithTitle("SELECT_MAX_10");
 
@@ -49,16 +107,10 @@ const clientScene = new CustomWizardScene("buyScene")
         const connection = await tOrmCon;
 
         const orderId = (ctx.wizard.state.orderId = (
-          await connection
-            .query(
-              "insert into orders (count, sum, customer_id) values ($1, $2, $3) RETURNING id",
-              [count, sum, ctx.from.id]
-            )
-            .catch((e) => {
-              console.log(e);
-              ctx.replyWithTitle("DB_ERROR");
-              ctx.scene.reenter({ userObj: ctx.scene.state.userObj });
-            })
+          await connection.query(
+            "insert into orders (count, sum, customer_id) values ($1, $2, $3) RETURNING id",
+            [count, sum, ctx.from.id]
+          )
         )?.[0]?.id);
 
         if (!orderId) throw new Error("CANT_GET_ORDER_ID_" + ctx.from.username);
@@ -77,17 +129,11 @@ const clientScene = new CustomWizardScene("buyScene")
           [sum, address, comment, paymentURL]
         );
 
-        console.log();
-
         ctx.wizard.next();
-      } catch {
-        (e) => {
-          console.error(
-            `ERROR CREATING APPOINTMENT: ${ctx.from.username}: ${e}`
-          );
-          ctx.replyWithTitle("DB_ERROR");
-          ctx.scene.reenter({ userObj: ctx.scene.state.userObj });
-        };
+      } catch (e) {
+        console.error(`ERROR CREATING APPOINTMENT: ${ctx.from.username}: ${e}`);
+        await ctx.replyWithTitle("DB_ERROR");
+        await ctx.scene.enter("clientScene");
       }
     },
   })
@@ -125,14 +171,31 @@ const clientScene = new CustomWizardScene("buyScene")
       await queryRunner.startTransaction();
 
       try {
-        await queryRunner.query(
-          "update orders set status = 'payed' where customer_id = $1",
-          [ctx.from.id]
-        );
-        await queryRunner.query(
-          "update users set nft_count = nft_count+$2 where id = $1",
-          [ctx.from.id, ctx.scene.state.count]
-        );
+        const setPayedStatus = !!(
+          await queryRunner
+            .query(
+              "update orders set status = 'payed' where customer_id = $1 and id = $2",
+              [ctx.from.id, orderId]
+            )
+            .catch((e) => {
+              throw new Error("ERROR_UPDATING_STATUS: ", e);
+            })
+        )?.[1];
+
+        if (!setPayedStatus) throw new Error("NOTHING_TO_UPDATING_STATUS");
+
+        const setNFTCountStatus = !!(
+          await queryRunner
+            .query("update users set nft_count = nft_count+$2 where id = $1", [
+              ctx.from.id,
+              ctx.scene.state.count,
+            ])
+            .catch((e) => {
+              throw new Error("ERROR_UPDATING_COUNT: ", e);
+            })
+        )?.[1];
+
+        if (!setNFTCountStatus) throw new Error("NOTHING_TO_UPDATING_COUNT");
 
         await queryRunner.commitTransaction();
 

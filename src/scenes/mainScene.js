@@ -13,7 +13,7 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
   const connection = await tOrmCon;
 
   if (!userObj) {
-    await ctx.replyWithTitle("GREETING");
+    await ctx.replyWithKeyboard("GREETING", "remove_keyboard");
 
     userObj = await connection
       .getRepository("User")
@@ -30,7 +30,7 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
   if (!wallet_addr) return await ctx.scene.enter("verificationScene");
 
   if (user_id) {
-  } else if (userObj?.login_ago !== "0") {
+  } else if (userObj?.login_ago !== 0) {
     await connection
       .query(
         "UPDATE users u SET last_use = now(), username = $2 WHERE id = $1",

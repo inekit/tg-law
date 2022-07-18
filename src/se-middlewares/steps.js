@@ -278,7 +278,7 @@ function createH(type, stepInfo, nextStepInfo, scene) {
   const cursor = stepInfo?.skipToInfo?.cursor;
   const handler =
     stepInfo?.handler_template ?? stepInfo?.handler ?? new Composer();
-  console.log(stepInfo?.handler_template);
+  //console.log(stepInfo?.handler_template);
   //console.log('stinfo',stepInfo?.skipTo)
 
   if (stepInfo?.skipTo)
