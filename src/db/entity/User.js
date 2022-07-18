@@ -37,5 +37,10 @@ module.exports = new EntitySchema({
       nullable: false,
       default: 0,
     },
+    is_subscribed_private: {
+      type: "boolean",
+      default: false,
+      nullable: false,
+    },
   },
 });

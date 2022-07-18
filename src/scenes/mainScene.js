@@ -1,6 +1,7 @@
 const {
   Scenes: { BaseScene },
 } = require("telegraf");
+const checkSubscription = require("../Utils/checkSubscription");
 
 const { titles } = require("telegraf-steps-engine");
 const tOrmCon = require("../db/connection");
@@ -12,12 +13,21 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
 
   const connection = await tOrmCon;
 
+  const is_subscribed_private = await checkSubscription(
+    ctx,
+    process.env.PRIVATE_CHAT_ID
+  );
+
   if (!userObj) {
     await ctx.replyWithKeyboard("GREETING", "remove_keyboard");
 
     userObj = await connection
       .getRepository("User")
-      .save({ id: ctx.from.id, username: ctx.from.username })
+      .save({
+        id: ctx.from.id,
+        username: ctx.from.username,
+        is_subscribed_private,
+      })
       .catch(async (e) => {
         console.log(e);
         ctx.replyWithTitle("DB_ERROR");
@@ -26,6 +36,17 @@ const clientScene = new BaseScene("clientScene").enter(async (ctx) => {
 
   const { nft_count, lootbox_count, wl_count, wallet_addr, user_id } =
     userObj ?? {};
+
+  if (userObj?.is_subscribed_private !== is_subscribed_private)
+    await connection
+      .query(
+        "UPDATE users u SET is_subscribed_private = $2, lootbox_count=lootbox_count+$3 WHERE id = $1",
+        [ctx.from?.id, is_subscribed_private, is_subscribed_private ? 1 : -1]
+      )
+      .catch((e) => {
+        console.log(e);
+        ctx.replyWithTitle("DB_ERROR");
+      });
 
   if (!wallet_addr) return await ctx.scene.enter("verificationScene");
 
@@ -151,7 +172,7 @@ async function getUser(ctx) {
 
   let userObj = await connection
     .query(
-      `SELECT u.id, DATE_PART('day', now() - u.last_use) login_ago,user_id, wallet_addr, nft_count, lootbox_count, wl_count
+      `SELECT u.id, DATE_PART('day', now() - u.last_use) login_ago,user_id, wallet_addr, nft_count, lootbox_count, wl_count, is_subscribed_private
       FROM users u left join admins a on a.user_id = u.id where u.id = $1 limit 1`,
       [ctx.from?.id]
     )
