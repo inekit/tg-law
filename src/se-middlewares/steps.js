@@ -26,6 +26,7 @@ class Step {
       skipTo,
       skipText,
       cb,
+      onInput,
       options,
       autoNext,
     } = obj;
@@ -45,6 +46,7 @@ class Step {
       confirm_header,
       next,
       cb,
+      onInput,
       autoNext: autoNext ?? true,
       options: type === "select" || type === "menu" ? options : undefined,
       //cursor: this.getLength() + this.startFrom,
@@ -101,6 +103,7 @@ class Steps {
     options,
     prefix,
     cb,
+    onInput,
     confines,
     skipTo,
     skipText,
@@ -112,6 +115,7 @@ class Steps {
       keyboard: { name: "custom_obj_keyboard", args: [options] },
       options: formatSelectOptions(options),
       cb,
+      onInput,
       skipTo,
       skipText,
     });
@@ -298,6 +302,9 @@ function createH(type, stepInfo, nextStepInfo, scene) {
         }  */
     });
   if (type === "select") {
+    if (stepInfo.onInput) {
+      handler.on("text", (ctx) => stepInfo.onInput(ctx));
+    }
     if (stepInfo.options && !stepInfo.cb)
       handler.action(stepInfo.options, (ctx) =>
         actions.addInput(

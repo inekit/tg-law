@@ -15,16 +15,17 @@ const scene = new CustomWizardScene("appointmentsScene").enter(async (ctx) => {
   const connection = await tOrmCon;
 
   const orders = (ctx.scene.state.appointments = await connection
-    .query("SELECT * from appointments where worker_rate is null")
+    .query(
+      "SELECT * from appointments where worker_rate is null and customer_id = $1",
+      [ctx.from.id]
+    )
     .catch((e) => {
       ctx.replyWithTitle("DB_ERROR");
       console.log(e);
     }));
 
-  if (!orders) {
-    await ctx.getTitle("NO_ORDERS_YET");
-
-    return await ctx.scene.enter("clientScene");
+  if (!orders?.length) {
+    return await ctx.scene.enter("mainScene");
   }
 
   ctx.replyWithKeyboard("CHOOSE_ORDER", {

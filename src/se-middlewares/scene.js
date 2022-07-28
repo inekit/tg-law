@@ -60,7 +60,7 @@ module.exports = class CustomWizardScene extends BaseScene {
     return this;
   };
 
-  async replyStep(ctx, cursor, previousInfo = false) {
+  async replyStep(ctx, cursor, previousInfo = false, edit = false) {
     if (cursor < 0 || cursor >= this.steps.length) return;
 
     const { header, keyboard } = this.steps.getStepDataById(cursor) ?? {};
@@ -72,7 +72,14 @@ module.exports = class CustomWizardScene extends BaseScene {
     const { kbTop, kbBottom } = ctx.initKeyboards(keyboard);
 
     if (header && header !== "ENTER_undefined")
-      await ctx.sendInputReply(ctx, header, keyboard, keyboard, previousInfo);
+      await ctx.sendInputReply(
+        ctx,
+        header,
+        keyboard,
+        keyboard,
+        previousInfo,
+        edit
+      );
 
     if (!ctx.wizard && cursor !== 0)
       throw new Error("cant change step with no wizard");
@@ -85,25 +92,27 @@ module.exports = class CustomWizardScene extends BaseScene {
   middleware(isEnter) {
     return Composer.compose([
       (ctx, next) => {
-        ctx.replyStep = (cursor) => this.replyStep(ctx, cursor, true);
+        ctx.replyStep = (cursor, edit) =>
+          this.replyStep(ctx, cursor, true, edit);
 
-        ctx.replyStepByVariable = (variable) => {
+        ctx.replyStepByVariable = (variable, edit) => {
           const cursor = this.steps.getStepDataByVariable(variable);
           if (!cursor)
             return ctx.replyWithTitle(`Нету шага для переменной ${variable}`);
 
-          this.replyStep(ctx, cursor.id).catch(console.log);
+          this.replyStep(ctx, cursor.id, false, edit).catch(console.log);
         };
 
-        ctx.replyNextStep = () => this.replyStep(ctx, ctx.wizard.cursor + 1);
+        ctx.replyNextStep = (edit) =>
+          this.replyStep(ctx, ctx.wizard.cursor + 1, false, edit);
 
-        ctx.replyPreviousStep = () => {
+        ctx.replyPreviousStep = (edit) => {
           const varName = this.steps.getStepDataById(
             ctx.wizard.cursor
           )?.variable;
           //console.log(varName,ctx.wizard.cursor - 1)
           delete ctx.wizard.state.input?.[varName];
-          this.replyStep(ctx, ctx.wizard.cursor - 1);
+          this.replyStep(ctx, ctx.wizard.cursor - 1, false, edit);
         };
 
         ctx.wizard = new CustomContextWizard(ctx, this.steps);

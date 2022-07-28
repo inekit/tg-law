@@ -11,7 +11,7 @@ async function getUser(ctx) {
 
   let userObj = await connection
     .query(
-      `SELECT u.*, sum(case when worker_id is null then 1 else 0 end) a_count from users u left join appointments a on a.customer_id = u.id where u.id = $1 group by u.id limit 1`,
+      `SELECT u.*, sum(case when (a.id is not null and worker_id is null) then 1 else 0 end) a_count from users u left join appointments a on a.customer_id = u.id where u.id = $1 group by u.id limit 1`,
       [ctx.from?.id]
     )
     .catch((e) => {
@@ -76,7 +76,27 @@ const clientScene = new CustomWizardScene("clientScene")
   })
   .addSelect({
     variable: "branch",
-    options: { "Уголовное право": "Уголовное право" },
+    options: {
+      "Гражданское право": "Гражданское право",
+      "Уголовное право": "Уголовное право",
+      "Арбитражные споры": "Арбитражные споры",
+      "Защита военнослужащих": "Защита военнослужащих",
+      "Защита прав потребителей": "Защита прав потребителей",
+      "Исполнительное производство": "Исполнительное производство",
+    },
+    onInput: (ctx) => {
+      console.log(ctx);
+      const branch =
+        (ctx.wizard.state.temp =
+        ctx.wizard.state.branch =
+          ctx.message.text);
+
+      ctx.replyWithKeyboard("CHECK_ENTER", "check_enter_keyboard", [
+        "Область права",
+        "Область права",
+        branch,
+      ]);
+    },
     cb: (ctx) => {
       console.log(ctx);
       const branch =
@@ -142,6 +162,7 @@ const clientScene = new CustomWizardScene("clientScene")
         branch,
         description,
         price,
+        ctx.scene.state.input.is_payed ? "Да" : "Нет",
         timeout,
       ]);
     },
@@ -200,7 +221,7 @@ clientScene.action("next", async (ctx) => {
               branch,
               description,
               price,
-              ctx.scene.state.input.is_payed,
+              ctx.scene.state.input.is_payed ? "Да" : "Нет",
               timeout,
             ]),
             createKeyboard({ name: "i_gets", args: [appointment_id] }, ctx)
@@ -221,7 +242,7 @@ clientScene.action("next", async (ctx) => {
             branch,
             description,
             price,
-            ctx.scene.state.input.is_payed,
+            ctx.scene.state.input.is_payed ? "Да" : "Нет",
             timeout,
           ]),
 
@@ -238,10 +259,10 @@ clientScene.action("next", async (ctx) => {
           .deleteMessage(-1001503737085, ctx.scene.state.post_id)
           .catch(console.log);
         await ctx.replyWithTitle("DB_ERROR");
-        await ctx.replyStep(0);
+        await ctx.replyStep(0, true);
         console.error(e);
       });
-  } else ctx.replyNextStep();
+  } else ctx.replyNextStep(true);
 });
 
 module.exports = clientScene;

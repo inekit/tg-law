@@ -1,105 +1,42 @@
-const TonWeb = require("tonweb");
-var crypto = require("crypto");
-var salt = process.env.CIPHER_SALT; //crypto.randomBytes(128).toString('base64');
+const axios = require("axios").default;
 
-class Payments {
-  constructor() {
-    const apiKey =
-      process.env.TONWEB_API_KEY ??
-      "be4d286177a77090f7ad865701ca9345bc71f893bd2950b9b97f2a9bbc89c319";
+const express = require("express");
+const app = express();
+const port = 80;
 
-    const apiAddr =
-      process.env.NODE_ENV === "production"
-        ? "https://toncenter.com/api/v2/jsonRPC"
-        : "https://testnet.toncenter.com/api/v2/jsonRPC";
+const params = new URLSearchParams();
+params.append("a", 1);
+const tOrmCon = require("../db/connection");
 
-    this.walletAddr = process.env.WALLET_ADDR;
+(async () => {
+  console.log(await getPaymentLink(1));
+})();
 
-    this.tonweb = new TonWeb(new TonWeb.HttpProvider(apiAddr, { apiKey }));
-  }
+async function getPaymentLink(order_id) {
+  const response = await axios.post(
+    "https://yoomoney.ru/quickpay/confirm.xml",
+    {
+      receiver: "4100111177290037",
+      "quickpay-form": "shop",
+      sum: 500,
+      targets: "Предоплата за юр услуги",
+      paymentType: "AC",
+      label: "123",
+    }
+  );
 
-  #hashPwd(salt, pwd) {
-    var hmac = crypto.createHmac("sha256", salt);
-    return hmac.update(pwd.toString()).digest("hex");
-  }
-
-  encodeComment(comment) {
-    return this.#hashPwd(salt, comment);
-  }
-
-  #compareComment(id, comment) {
-    return comment === this.encodeComment(id);
-  }
-
-  async getTransferInfo(sum, comment) {
-    const eComment = this.encodeComment(comment);
-    const link = await this.tonweb.utils.formatTransferUrl(
-      this.walletAddr,
-      this.tonweb.utils.toNano(sum.toString()),
-      eComment
-    );
-
-    return {
-      link,
-      address: this.walletAddr,
-      comment: eComment,
-    };
-  }
-
-  async isOrderPaid(id, orderSum, customerAddr) {
-    const transactions = await this.tonweb
-      .getTransactions(this.walletAddr)
-      .catch((e) => {
-        console.error("ERROR CHECKING TRANSACTIONS:", e);
-      }); //(new Date()).getTime()
-
-    if (!transactions) return false;
-
-    const checkingInfo = transactions.map((t) => {
-      return {
-        comment: t?.in_msg?.message,
-        destination: t?.in_msg?.destination,
-        sum: this.tonweb.utils.fromNano(t?.in_msg?.value),
-        source: t?.in_msg?.source,
-      };
-    });
-
-    const isPayed = !!(
-      checkingInfo.findIndex(({ comment, sum, destination, source }) => {
-        /*console.log(
-          parseFloat(sum),
-          parseFloat(orderSum),
-          this.#compareComment(id, comment),
-          destination === this.walletAddr,
-          parseFloat(sum) >= parseFloat(orderSum),
-          source === customerAddr
-        );*/
-        return (
-          this.#compareComment(id, comment) &&
-          destination === this.walletAddr &&
-          parseFloat(sum) >= parseFloat(orderSum) &&
-          source === customerAddr
-        );
-      }) + 1
-    );
-
-    //console.log(new Date(1785767000003), (new Date()).getTime())
-    //console.log(checkingInfo)
-
-    return isPayed;
-  }
+  return response.request.res.responseUrl;
 }
 
-/*(async () => {
-  const p = new Payments();
+app.get("/recieve", async (req, res) => {
+  console.log(req, 1111, req.body, 2222, req.params);
 
-  console.log(
-    await p.isOrderPaid(
-      p.encodeComment("комментарий"),
-      0.1,
-      "EQCh-Iqo7oxGo5gTyDVsgPgH7iDoKXvqCHlSBzVMBqPtgPpw"
-    )
-  );
-})();*/
+  const connection = await tOrmCon;
 
-module.exports = new Payments();
+  connection.query("update appointments set payed = $1", [req.label]);
+  res.send();
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});

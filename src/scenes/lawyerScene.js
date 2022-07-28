@@ -7,6 +7,7 @@ const FilesHandler = require("../Utils/fileHandler");
 
 const { titles } = require("telegraf-steps-engine");
 const tOrmCon = require("../db/connection");
+const { threadId } = require("worker_threads");
 async function getUser(ctx) {
   const connection = await tOrmCon;
 
@@ -39,7 +40,11 @@ const clientScene = new CustomWizardScene("lawyerScene")
         });
     }
 
-    if (userObj?.verification_status === "created")
+    console.log(userObj?.verification_status);
+    if (
+      userObj?.verification_status === "created" ||
+      !userObj?.verification_status
+    )
       await ctx.replyWithKeyboard(
         ctx.getTitle("GREETING_LAWYER"),
         "register_lawyer_keyboard"
@@ -51,6 +56,7 @@ const clientScene = new CustomWizardScene("lawyerScene")
       );
     else {
       await ctx.replyWithTitle(ctx.getTitle("MAIN_MENU_LAWYER_VERIFIED"));
+      ctx.scene.enter("mainScene");
     }
   })
   .addSelect({
@@ -89,7 +95,7 @@ const clientScene = new CustomWizardScene("lawyerScene")
       ]);
     },
   })
-  .addStep({
+  .addSelect({
     variable: "branch",
     header: "ENTER_BRANCH_LAWYER",
     options: {
@@ -100,12 +106,25 @@ const clientScene = new CustomWizardScene("lawyerScene")
       "Защита прав потребителей": "Защита прав потребителей",
       "Исполнительное производство": "Исполнительное производство",
     },
+    onInput: (ctx) => {
+      console.log(ctx);
+      const branch =
+        (ctx.wizard.state.temp =
+        ctx.wizard.state.branch =
+          ctx.message.text);
+
+      ctx.replyWithKeyboard("CHECK_ENTER", "check_enter_keyboard", [
+        "Область права",
+        "Область права",
+        branch,
+      ]);
+    },
     cb: (ctx) => {
       console.log(ctx);
       const branch =
         (ctx.wizard.state.temp =
         ctx.wizard.state.branch =
-          ctx.match?.[0] ?? ctx.wizard.text);
+          ctx.match?.[0]);
 
       ctx.replyWithKeyboard("CHECK_ENTER", "check_enter_keyboard", [
         "Область права",
@@ -157,7 +176,7 @@ const clientScene = new CustomWizardScene("lawyerScene")
         })
         .catch(async (e) => {
           await ctx.replyWithTitle("DB_ERROR");
-          await ctx.replyStep(0);
+          await ctx.replyStep(0, e);
           console.error(e);
         });
     }),
@@ -166,11 +185,11 @@ const clientScene = new CustomWizardScene("lawyerScene")
 clientScene.action("re_enter", (ctx) => {
   ctx.answerCbQuery().catch(console.log);
 
-  ctx.replyStep(ctx.wizard.cursor);
+  ctx.replyStep(ctx.wizard.cursor, true);
 });
 clientScene.action("next", async (ctx) => {
   ctx.answerCbQuery().catch(console.log);
 
-  ctx.replyNextStep();
+  ctx.replyNextStep(true);
 });
 module.exports = clientScene;
