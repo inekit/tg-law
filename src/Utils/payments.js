@@ -31,9 +31,9 @@ async function getPaymentLink(order_id) {
 app.post("/recieve", async (req, res) => {
   console.log(req, 1111, req.body, 2222, req.params);
 
-  const connection = await tOrmCon;
+  //const connection = await tOrmCon;
 
-  connection.query("update appointments set payed = $1", [req.label]);
+  //connection.query("update appointments set payed = $1", [req.label]);
   res.send();
 });
 
