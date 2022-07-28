@@ -28,6 +28,10 @@ async function getPaymentLink(order_id) {
   return response.request.res.responseUrl;
 }
 
+app.use(express.urlencoded({
+  extended: true
+}))
+
 app.post("/recieve", async (req, res) => {
   console.log(req, 1111, req.body, 2222, req.params);
 
