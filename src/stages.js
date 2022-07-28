@@ -4,30 +4,23 @@ const {
   Composer,
 } = require("telegraf");
 const { titles } = require("telegraf-steps-engine");
-const stat = require("./Utils/statistics");
 const checkSubscription = require("./Utils/checkSubscription");
+const tOrmCon = require("./db/connection");
+const { constants } = require("buffer");
 
 const mainStage = new Stage(
   [
     require("./scenes/mainScene"),
-    require("./scenes/clientScenes/buyScene"),
-    require("./scenes/clientScenes/verificationScene"),
-
+    require("./scenes/clientScene"),
+    require("./scenes/lawyerScene"),
     require("./scenes/adminScene"),
-    require("./scenes/adminScenes/adminsScene"),
-  ],
-  { default: "clientScene" }
-);
+    require("./scenes/adminScenes/appointmentAdminScene"),
+    require("./scenes/adminScenes/lawyersScene"),
 
-mainStage.use(async (ctx, next) => {
-  if (ctx.callbackQuery?.data) await ctx.answerCbQuery().catch((e) => {});
-  if (!(await checkSubscription(ctx, process.env.PRIVATE_CHAT_ID)))
-    return ctx.replyWithKeyboard("YOU_SHOULD_SUBSCRIBE", {
-      name: "url_check_keyboard",
-      args: ["LINK_PRIVATE"],
-    });
-  return next();
-});
+    require("./scenes/clientScenes/appointmentsScene"),
+  ],
+  { default: "mainScene" }
+);
 
 /*mainStage.on('photo',ctx=>{
 	console.log(ctx.message.photo)
@@ -36,11 +29,7 @@ mainStage.use(async (ctx, next) => {
 //mainStage.on('video_note',ctx=>console.log(ctx.message))
 
 mainStage.start(async (ctx) => {
-  stat.increaseUse(ctx.from?.id).catch((e) => {
-    ctx.replyWithTitle(e.message);
-  });
-
-  ctx.scene.enter("clientScene");
+  ctx.scene.enter("mainScene");
 });
 
 mainStage.hears(titles.getValues("BUTTON_BACK_ADMIN"), (ctx) =>
@@ -50,11 +39,70 @@ mainStage.hears(titles.getValues("BUTTON_ADMIN_MENU"), (ctx) =>
   ctx.scene.enter("adminScene")
 );
 mainStage.hears(titles.getValues("BUTTON_BACK_USER"), (ctx) =>
-  ctx.scene.enter("clientScene")
+  ctx.scene.enter("mainScene")
 );
 
 const stages = new Composer();
-
 stages.use(Telegraf.chatType("private", mainStage.middleware()));
+
+stages.action(/^drop_appointment_(.+)$/g, (ctx) => {
+  ctx.answerCbQuery().catch(console.log);
+
+  ctx.scene.enter("appointmentAdminScene", {
+    position: "drop",
+    appointment_id: ctx.match[1],
+  });
+});
+
+stages.action(/^choose_worker_(.+)$/g, (ctx) => {
+  ctx.answerCbQuery().catch(console.log);
+
+  ctx.scene.enter("appointmentAdminScene", {
+    position: "choose",
+    appointment_id: ctx.match[1],
+  });
+});
+
+stages.action(/^get_appointment_(.+)$/g, async (ctx) => {
+  const connection = await tOrmCon;
+
+  const res = await connection
+    .query("insert into answers (lawyer_id, appointment_id) values ($1, $2)", [
+      ctx.from.id,
+      ctx.match[1],
+    ])
+    .then((res) => {
+      ctx.answerCbQuery(ctx.getTitle("YOU_ANSWERED")).catch(console.log);
+    })
+    .catch((e) => {
+      if (e.code == 23505)
+        return ctx.answerCbQuery(ctx.getTitle("YOU_ALREADY_ANSWERED"));
+
+      connection
+        .getRepository("Lawyer")
+        .save({
+          id: ctx.from.id,
+          username: ctx.from.username,
+        })
+        .catch(async (e) => {
+          console.log(e);
+          ctx
+            .answerCbQuery(ctx.getTitle("YOU_NOT_ANSWERED"))
+            .catch(console.log);
+        });
+
+      connection
+        .query(
+          "insert into answers (lawyer_id, appointment_id) values ($1, $2)",
+          [ctx.from.id, ctx.match[1]]
+        )
+        .catch(async (e) => {
+          console.log(e);
+          ctx
+            .answerCbQuery(ctx.getTitle("YOU_NOT_ANSWERED"))
+            .catch(console.log);
+        });
+    });
+});
 
 module.exports = stages;

@@ -8,6 +8,7 @@ const TOKEN = process.env.BOT_TOKEN;
 
 const bot = new Telegraf(TOKEN);
 
+require("dotenv").config();
 console.log("started");
 
 (async () => {

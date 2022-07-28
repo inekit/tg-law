@@ -4,22 +4,136 @@ const callbackButton = Markup.button.callback;
 const urlButton = Markup.button.url;
 const { inlineKeyboard } = Markup;
 
-exports.url_keyboard = (ctx, link) => {
+exports.new_appointment_keyboard = (ctx, a_count) => {
   const keyboard = inlineKeyboard(
-    [urlButton(ctx.getTitle("GROUP_LINK_NAME"), link)],
+    [callbackButton(ctx.getTitle("BUTTON_NEW_APPOINTMENT"), "new_appointment")],
+    { columns: 1 }
+  );
+
+  console.log(a_count);
+  if (a_count > 0)
+    keyboard.reply_markup.inline_keyboard.push([
+      callbackButton(ctx.getTitle("BUTTON_APPOINTMENTS"), "appointments"),
+    ]);
+
+  return keyboard;
+};
+
+exports.appointsments_keyboard = (ctx, app) => {
+  let k = inlineKeyboard([]);
+
+  app.forEach(({ id, description }) => {
+    k.reply_markup.inline_keyboard.push([
+      callbackButton(description, "appointsment_" + id),
+    ]);
+  });
+
+  return k;
+};
+
+exports.register_lawyer_keyboard = (ctx) => {
+  const keyboard = inlineKeyboard(
+    [callbackButton(ctx.getTitle("BUTTON_REGISTER_LAWYER"), "register")],
     { columns: 1 }
   );
 
   return keyboard;
 };
 
-exports.url_check_keyboard = (ctx, linkTitle) => {
+exports.check_enter_keyboard = (ctx) => {
   const keyboard = inlineKeyboard(
     [
-      urlButton(ctx.getTitle("PRIVATE_LINK_NAME"), ctx.getTitle(linkTitle)),
+      callbackButton(ctx.getTitle("REENTER"), "re_enter"),
+      callbackButton(ctx.getTitle("NEXT"), "next"),
+    ],
+    { columns: 2 }
+  );
+
+  return keyboard;
+};
+
+exports.appointment_finish_kb = (ctx, id) => {
+  return inlineKeyboard([
+    callbackButton(ctx.getTitle("FINISH"), "finish_" + id),
+  ]);
+};
+
+exports.appointment_cancel_kb = (ctx, id) => {
+  return inlineKeyboard([
+    callbackButton(ctx.getTitle("CANCEL"), "cancel_" + id),
+  ]);
+};
+
+exports.drop_get_ap_keyboard_main = (ctx) => {
+  const keyboard = inlineKeyboard(
+    [
+      callbackButton(ctx.getTitle("DROP_APPOINTMENT"), "drop_appointment_main"),
+      callbackButton(ctx.getTitle("CHOOSE_WORKER"), "choose_worker_main"),
+    ],
+    { columns: 2 }
+  );
+
+  return keyboard;
+};
+
+exports.drop_get_ap_keyboard = (ctx, id) => {
+  const keyboard = inlineKeyboard(
+    [
       callbackButton(
-        ctx.getTitle("BUTTON_CHECK_SUBSCRIBE"),
-        `i_subscribed_private`
+        ctx.getTitle("DROP_APPOINTMENT"),
+        "drop_appointment_" + id
+      ),
+      callbackButton(ctx.getTitle("CHOOSE_WORKER"), "choose_worker_" + id),
+    ],
+    { columns: 2 }
+  );
+
+  return keyboard;
+};
+
+exports.main_menu_keyboard = (ctx) => {
+  const keyboard = inlineKeyboard(
+    [
+      callbackButton(ctx.getTitle("CLIENT_SCENE"), "enter_client"),
+      callbackButton(ctx.getTitle("LAWYER_SCENE"), "enter_lawyer"),
+      callbackButton(ctx.getTitle("ADMIN_SCENE"), "enter_admin"),
+    ],
+    { columns: 3 }
+  );
+
+  return keyboard;
+};
+
+exports.admin_main_keyboard = (ctx) => {
+  const keyboard = inlineKeyboard(
+    [
+      callbackButton(ctx.getTitle("APPOINTMENTS"), "appointments"),
+      callbackButton(ctx.getTitle("LAWYERS"), "lawyers"),
+    ],
+    { columns: 2 }
+  );
+
+  return keyboard;
+};
+
+exports.admin_main_keyboard_owner = (ctx) => {
+  const keyboard = inlineKeyboard(
+    [
+      callbackButton(ctx.getTitle("APPOINTMENTS"), "appointments"),
+      callbackButton(ctx.getTitle("LAWYERS"), "lawyers"),
+    ],
+    { columns: 2 }
+  );
+
+  return keyboard;
+};
+
+exports.i_gets = (ctx, id) => {
+  const keyboard = inlineKeyboard(
+    [
+      callbackButton(
+        ctx.getTitle("I_GET_APPOINTMENT"),
+        "get_appointment_" + id
       ),
     ],
     { columns: 1 }
@@ -28,48 +142,62 @@ exports.url_check_keyboard = (ctx, linkTitle) => {
   return keyboard;
 };
 
-exports.submit_payment_keyboard = (ctx, link, isSkip) => {
-  const keyboard = inlineKeyboard(
-    [
-      urlButton(ctx.getTitle("LINK_NAME"), link),
-      callbackButton(ctx.getTitle("BUTTON_CHECK_SUBSCRIBE"), `submit_payment`),
-    ],
-    { columns: 1 }
-  );
+exports.choose_worker_keyboard = (ctx, workers) => {
+  let k = inlineKeyboard([]);
 
-  if (isSkip)
-    keyboard.reply_markup.inline_keyboard.push([
-      callbackButton(ctx.getTitle("BUTTON_SKIP"), "drop_order"),
-    ]);
+  console.log(workers);
 
-  return keyboard;
-};
-
-exports.i_subscribed_keyboard = (ctx, linkTitle) => {
-  const keyboard = inlineKeyboard(
-    [
-      urlButton(ctx.getTitle("LINK_NAME"), ctx.getTitle(linkTitle)),
-      callbackButton(ctx.getTitle("I_SUBSCRIBED"), `i_subscribed_main`),
-    ],
-    { columns: 1 }
-  );
-
-  return keyboard;
-};
-
-exports.subscribe_additional_keyboard = (ctx, subscribedPrivate) => {
-  const keyboard = inlineKeyboard(
-    [callbackButton(ctx.getTitle("BUTTON_SUBSCRIBE_ADD"), "subscribeAdd")],
-    { columns: 1 }
-  );
-
-  if (!subscribedPrivate)
-    keyboard.reply_markup.inline_keyboard.push([
+  workers.forEach(({ fio, id, rate, city }) => {
+    console.log(id, fio, rate);
+    k.reply_markup.inline_keyboard.push([
       callbackButton(
-        ctx.getTitle("BUTTON_SUBSCRIBE_PRIVATE"),
-        "subscribePrivate"
+        `${fio ?? "Аноним"} ${rate ?? "без оцен."}`,
+        "worker_" + id
       ),
     ]);
+  });
+
+  return k;
+};
+
+exports.drop_verify_keyboard = (ctx, id) => {
+  const keyboard = inlineKeyboard(
+    [
+      callbackButton(ctx.getTitle("DROP_LAWYER"), "skip_" + id),
+      callbackButton(ctx.getTitle("VERIFY_LAWYER"), "verify_" + id),
+    ],
+    { columns: 2 }
+  );
+
+  return keyboard;
+};
+
+exports.orders_reviews_keyboard = (ctx, orders) => {
+  let k = inlineKeyboard([]);
+
+  orders.forEach(({ description, id, worker_id }) => {
+    k.reply_markup.inline_keyboard.push([
+      callbackButton(
+        description ?? "  ",
+        worker_id ? "order_" + id : "appointment_" + id
+      ),
+    ]);
+  });
+
+  return k;
+};
+
+exports.rate_keyboard = (ctx) => {
+  const keyboard = inlineKeyboard(
+    [
+      callbackButton("1", "rate_1"),
+      callbackButton("2", "rate_2"),
+      callbackButton("3", "rate_3"),
+      callbackButton("4", "rate_4"),
+      callbackButton("5", "rate_5"),
+    ],
+    { columns: 1 }
+  );
 
   return keyboard;
 };

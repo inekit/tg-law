@@ -18,27 +18,10 @@ const adminScene = new WizardScene(
 );
 
 adminScene.enter(async (ctx) => {
-  const connection = await tOrmCon;
-
-  connection
-    .getRepository("Admin")
-    .findOne({ where: { user_id: ctx.from?.id } })
-    .then((res) => {
-      if (!res) return ctx.scene.enter("clientScene");
-      if (!res.canUpdateAdmins)
-        return ctx.replyWithKeyboard(
-          "ADMIN_MENU_ACTIONS",
-          "admin_main_keyboard"
-        );
-      return ctx.replyWithKeyboard(
-        "ADMIN_MENU_ACTIONS",
-        "admin_main_keyboard_owner"
-      );
-    })
-    .catch((e) => {
-      console.log(e);
-      ctx.replyWithTitle("DB_ERROR");
-    });
+  await ctx.replyWithKeyboard(
+    ctx.getTitle("ADMIN_MENU"),
+    "admin_main_keyboard"
+  );
 });
 
 adminScene.hears(titles.getValues("BUTTON_CHANGE_TEXT"), (ctx) =>
@@ -50,7 +33,17 @@ adminScene.hears(titles.getValues("BUTTON_ADMINS"), (ctx) =>
 );
 
 adminScene.hears(titles.getValues("BUTTON_CLIENT_MENU"), (ctx) =>
-  ctx.scene.enter("clientScene")
+  ctx.scene.enter("adminsScene")
 );
+
+adminScene.action("appointments", (ctx) => {
+  ctx.answerCbQuery().catch(console.log);
+  ctx.scene.enter("appointmentAdminScene");
+});
+
+adminScene.action("lawyers", (ctx) => {
+  ctx.answerCbQuery().catch(console.log);
+  ctx.scene.enter("lawyersScene");
+});
 
 module.exports = adminScene;

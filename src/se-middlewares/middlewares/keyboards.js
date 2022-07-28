@@ -63,7 +63,7 @@ exports.categories_list_keyboard_bottom = (ctx, data, totalStr) => {
   return Markup.keyboard(categoryButtons).resize();
 };
 
-exports.admin_main_keyboard = (ctx) =>
+/*exports.admin_main_keyboard = (ctx) =>
   Markup.keyboard([
     [ctx.getTitle("BUTTON_ADD")],
     [ctx.getTitle("BUTTON_CAPTCHA")],
@@ -76,7 +76,7 @@ exports.admin_main_keyboard_owner = (ctx) =>
     [ctx.getTitle("BUTTON_CAPTCHA")],
     [ctx.getTitle("BUTTON_ADMINS")],
     [ctx.getTitle("BUTTON_CLIENT_MENU")],
-  ]).resize();
+  ]).resize();*/
 
 exports.main_menu_goback_keyboard = (ctx) =>
   Markup.keyboard(

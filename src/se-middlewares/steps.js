@@ -233,6 +233,7 @@ function formatOptions(soArray) {
 }
 
 function formatSelectOptions(soArray) {
+  console.log(soArray);
   if (
     !(
       typeof soArray === "object" &&

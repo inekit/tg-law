@@ -17,30 +17,5 @@ module.exports = new EntitySchema({
       type: "date",
       nullable: true,
     },
-    wallet_addr: {
-      type: "varchar",
-      length: 255,
-      nullable: true,
-    },
-    wl_count: {
-      type: "int",
-      nullable: false,
-      default: 0,
-    },
-    lootbox_count: {
-      type: "int",
-      nullable: false,
-      default: 0,
-    },
-    nft_count: {
-      type: "int",
-      nullable: false,
-      default: 0,
-    },
-    is_subscribed_private: {
-      type: "boolean",
-      default: false,
-      nullable: false,
-    },
   },
 });
