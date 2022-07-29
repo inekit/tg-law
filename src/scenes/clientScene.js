@@ -3,6 +3,7 @@ const {
 } = require("telegraf");
 
 const { CustomWizardScene, createKeyboard } = require("telegraf-steps-engine");
+require("dotenv").config();
 
 const getPaymentLink = require("../Utils/payments");
 const { titles } = require("telegraf-steps-engine");
@@ -272,7 +273,7 @@ clientScene.action("next", async (ctx) => {
       })
       .catch(async (e) => {
         await ctx.telegram
-          .deleteMessage(-1001503737085, ctx.scene.state.post_id)
+          .deleteMessage(process.env.CHANNEL_ID, ctx.scene.state.post_id)
           .catch(console.log);
         await ctx.replyWithTitle("DB_ERROR");
         await ctx.replyStep(0, true);
@@ -289,7 +290,7 @@ async function sendAppointment(ctx, appointment_id) {
 
   const post_id = (ctx.scene.state.post_id = (
     await ctx.telegram.sendMessage(
-      -1001503737085,
+      process.env.CHANNEL_ID,
       ctx.getTitle("APPOINTMENT_TOTAL", [
         city,
         branch,
@@ -312,7 +313,7 @@ async function sendAppointment(ctx, appointment_id) {
     .catch(console.log);
 
   ctx.telegram.sendMessage(
-    296846972,
+    process.env.ADMIN_ID,
     ctx.getTitle("APPOINTMENT_TOTAL", [
       city,
       branch,

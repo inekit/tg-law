@@ -6,6 +6,7 @@ const Payments = require("../../Utils/payments");
 const { titles } = require("telegraf-steps-engine");
 const tOrmCon = require("../../db/connection");
 const clientScene = require("../mainScene");
+require("dotenv").config();
 
 const scene = new CustomWizardScene("appointmentsScene").enter(async (ctx) => {
   const { edit, order_id } = ctx.scene.state;
@@ -62,7 +63,7 @@ scene.action(/^cancel_(.+)$/g, async (ctx) => {
       console.log(post_id);
 
       await ctx.telegram
-        .deleteMessage(-1001503737085, post_id)
+        .deleteMessage(process.env.CHANNEL_ID, post_id) 
         .catch(console.log);
 
       await ctx.replyWithTitle("APPOINTMENT_CANCELLED");

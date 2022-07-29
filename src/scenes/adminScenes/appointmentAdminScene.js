@@ -8,6 +8,7 @@ const tOrmCon = require("../../db/connection");
 const { getTitle } = require("telegraf-steps-engine/middlewares/titles");
 const { admin } = require("telegraf-steps-engine/scene");
 const adminScene = require("../adminScene");
+require("dotenv").config();
 
 const scene = new CustomWizardScene("appointmentAdminScene")
   .enter(async (ctx) => {
@@ -95,7 +96,7 @@ const scene = new CustomWizardScene("appointmentAdminScene")
           const post_id = ctx.wizard.state.post_id;
 
           await ctx.telegram
-            .deleteMessage(-1001503737085, post_id)
+            .deleteMessage(process.env.CHANNEL_ID, post_id)
             .catch(console.log);
 
           await ctx.editMenu("APPOINTMENT_DELETED");
