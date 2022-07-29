@@ -32,17 +32,18 @@ app.use(
 
 app.post("/recieve", async (req, res) => {
   const { currency, label, amount } = req.body;
+  console.log(currency, label, amount);
+
+  res.status(201).send("NO_DATA");
 
   if (currency != "643" || amount < 500) return;
-
-  console.log(currency, label, amount);
 
   const connection = await tOrmCon;
 
   await connection
     .query("update appointments set status = 'paid' where id = $1", [req.label])
     .catch(console.error);
-  res.send();
+  res.send("SUCCESS");
 });
 
 app.listen(port, () => {
