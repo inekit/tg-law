@@ -34,9 +34,7 @@ app.post("/recieve", async (req, res) => {
   const { currency, label, amount } = req.body;
   console.log(currency, label, amount);
 
-  res.status(201).send("NO_DATA");
-
-  if (currency != "643" || amount < 500) return;
+  if (currency != "643" || amount < 500) return res.status(201).send("NO_DATA");
 
   const connection = await tOrmCon;
 
