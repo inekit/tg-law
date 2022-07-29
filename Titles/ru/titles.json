@@ -71,9 +71,9 @@
   "I_PAID": "Я перевел",
   "PAYMENT_LAWYER_INFO": "Новый завершенный заказ № *: \n\nusername: @*\n\nНомер телефона для оплаты: *",
   "CONFIRM_I_PAID": "Подтвердите перевод",
-  "YOU_ARE_NOT_REGISTERED": "YOU_ARE_NOT_REGISTERED",
-  "BUTTON_FINISHED_A": "BUTTON_FINISHED_A",
-  "CANCEL": "CANCEL",
-  "PAY_FOR_A": "PAY_FOR_A",
-  "YOU_NOT_PAID": "YOU_NOT_PAID"
+  "YOU_ARE_NOT_REGISTERED": "Заявка платная. Зарегистрируйтесь в боте",
+  "BUTTON_FINISHED_A": "Заказы в раб.",
+  "PAY_FOR_A": "Для продолжения пам необходимо перейти по ссылке и провести оплату. Затем нажать 'Я оплатил'",
+  "YOU_NOT_PAID": "Вы не оплатили",
+  "I_PAID_A": "Я оплатил"
 }
