@@ -54,6 +54,12 @@ module.exports = new EntitySchema({
       type: "bigint",
       nullable: true,
     },
+    status: {
+      type: "enum",
+      enum: ["issued", "paid", "workerset", "finished", "closed"],
+      nullable: false,
+      default: "paid",
+    },
   },
   relations: {
     customer: {

@@ -4,6 +4,7 @@ const {
 
 const { CustomWizardScene, createKeyboard } = require("telegraf-steps-engine");
 
+const getPaymentLink = require("../Utils/payments");
 const { titles } = require("telegraf-steps-engine");
 const tOrmCon = require("../db/connection");
 async function getUser(ctx) {
@@ -11,7 +12,10 @@ async function getUser(ctx) {
 
   let userObj = await connection
     .query(
-      `SELECT u.*, sum(case when (a.id is not null and worker_id is null) then 1 else 0 end) a_count from users u left join appointments a on a.customer_id = u.id where u.id = $1 group by u.id limit 1`,
+      `SELECT u.*, 
+      sum(case when (a.id is not null and worker_id is null) then 1 else 0 end) a_count,
+      sum(case when (a.status='workerset') then 1 else 0 end) f_count 
+      from users u left join appointments a on a.customer_id = u.id where u.id = $1 group by u.id limit 1`,
       [ctx.from?.id]
     )
     .catch((e) => {
@@ -43,7 +47,7 @@ const clientScene = new CustomWizardScene("clientScene")
 
     await ctx.replyWithKeyboard(ctx.getTitle("GREETING"), {
       name: "new_appointment_keyboard",
-      args: [userObj?.a_count],
+      args: [userObj?.a_count, userObj?.f_count],
     });
   })
   .addSelect({
@@ -142,33 +146,78 @@ const clientScene = new CustomWizardScene("clientScene")
     },
   })
   .addSelect({
-    variable: "is_payed",
-    options: { FREE: "false", PAID: "true" },
-  })
-  .addSelect({
     variable: "timeout",
     options: { HOUR: "60", "3H": "180" },
     cb: (ctx) => {
-      console.log(ctx);
       const timeout =
         (ctx.wizard.state.temp =
         ctx.wizard.state.timeout =
           ctx.match?.[0]);
 
-      const { price, description, branch, city } = ctx.wizard.state ?? {};
+      ctx.replyWithKeyboard("CHECK_ENTER", "check_enter_keyboard", [
+        "Время жизни заявки",
+        "Время жизни заявки",
+        timeout + " минут",
+      ]);
+    },
+  })
+  .addSelect({
+    variable: "is_payed",
+    options: { FREE: "false", PAID: "true" },
+    cb: (ctx) => {
+      console.log(ctx);
+      const is_payed =
+        (ctx.wizard.state.temp =
+        ctx.wizard.state.is_payed =
+          ctx.match?.[0] === "true");
+
+      const { price, description, branch, city, timeout } =
+        ctx.wizard.state ?? {};
 
       ctx.replyWithKeyboard("APPOINTMENT_TOTAL", "check_enter_keyboard", [
         city,
         branch,
         description,
         price,
-        ctx.scene.state.input.is_payed ? "Да" : "Нет",
+        is_payed ? "Да" : "Нет",
         timeout,
       ]);
+    },
+  })
+  .addSelect({
+    options: { I_PAID_A: "i_paid_a" },
+    cb: async (ctx) => {
+      const connection = await tOrmCon;
+
+      if (!ctx.scene.state.appointment_id) return ctx.scene.enter("mainScene");
+
+      const res = await connection
+        .query(
+          "select case when status='paid' then 1 else 0 end as is_paid from appointments where id = $1",
+          [ctx.scene.state.appointment_id]
+        )
+        .catch(console.error);
+
+      if (!res?.[0]) return ctx.scene.enter("mainScene");
+
+      const is_paid = res?.[0]?.is_paid;
+
+      if (!is_paid)
+        return ctx
+          .answerCbQuery(ctx.getTitle("YOU_NOT_PAID"))
+          .catch(console.log);
+
+      await sendAppointment(ctx, ctx.scene.state.appointment_id);
     },
   });
 
 clientScene.action("appointments", (ctx) => {
+  ctx.answerCbQuery().catch(console.log);
+
+  ctx.scene.enter("appointmentsScene");
+});
+
+clientScene.action("finished", (ctx) => {
   ctx.answerCbQuery().catch(console.log);
 
   ctx.scene.enter("appointmentsScene");
@@ -183,16 +232,15 @@ clientScene.action("re_enter", (ctx) => {
 });
 clientScene.action("next", async (ctx) => {
   ctx.answerCbQuery().catch(console.log);
+  const connection = await tOrmCon;
 
   if (ctx.wizard.cursor === 7) {
-    const { price, description, branch, city, timeout } =
+    const { price, description, branch, city, timeout, is_payed } =
       ctx.wizard.state ?? {};
-
-    const connection = await tOrmCon;
 
     connection
       .query(
-        "insert into appointments (customer_id, city, branch, description, price, timeout,is_payed) values ($1,$2,$3,$4,$5,$6,$7) returning id",
+        "insert into appointments (customer_id, city, branch, description, price, timeout,is_payed, status) values ($1,$2,$3,$4,$5,$6,$7,$8) returning id",
         [
           ctx.from.id,
           city,
@@ -200,59 +248,27 @@ clientScene.action("next", async (ctx) => {
           description,
           price,
           timeout,
-          ctx.scene.state.input.is_payed,
+          is_payed,
+          is_payed ? "issued" : "paid",
         ]
       )
       .then(async (res) => {
-        ctx.replyWithKeyboard(
-          "APPOINTMENT_SUCCESS",
-          "new_appointment_keyboard"
-        );
-
-        const appointment_id = res?.[0]?.id;
+        const appointment_id = (ctx.scene.state.appointment_id = res?.[0]?.id);
 
         if (!appointment_id) return ctx.scene.enter("mainScene");
 
-        const post_id = (ctx.scene.state.post_id = (
-          await ctx.telegram.sendMessage(
-            -1001503737085,
-            ctx.getTitle("APPOINTMENT_TOTAL", [
-              city,
-              branch,
-              description,
-              price,
-              ctx.scene.state.input.is_payed ? "Да" : "Нет",
-              timeout,
-            ]),
-            createKeyboard({ name: "i_gets", args: [appointment_id] }, ctx)
-          )
-        )?.message_id);
+        if (is_payed) {
+          const link = await getPaymentLink(appointment_id);
 
-        connection
-          .query("update appointments set post_id = $1 where id = $2", [
-            post_id,
-            appointment_id,
-          ])
-          .catch(console.log);
+          ctx.replyWithKeyboard("PAY_FOR_A", {
+            name: "pay_link_kb",
+            args: [link],
+          });
 
-        ctx.telegram.sendMessage(
-          296846972,
-          ctx.getTitle("APPOINTMENT_TOTAL", [
-            city,
-            branch,
-            description,
-            price,
-            ctx.scene.state.input.is_payed ? "Да" : "Нет",
-            timeout,
-          ]),
+          return ctx.wizard.next();
+        }
 
-          createKeyboard(
-            { name: "drop_get_ap_keyboard", args: [appointment_id] },
-            ctx
-          )
-        );
-
-        ctx.wizard.selectStep(0);
+        await sendAppointment(ctx, appointment_id);
       })
       .catch(async (e) => {
         await ctx.telegram
@@ -264,5 +280,55 @@ clientScene.action("next", async (ctx) => {
       });
   } else ctx.replyNextStep(true);
 });
+
+async function sendAppointment(ctx, appointment_id) {
+  const { price, description, branch, city, timeout, is_payed } =
+    ctx.wizard.state ?? {};
+
+  ctx.replyWithKeyboard("APPOINTMENT_SUCCESS", "new_appointment_keyboard");
+
+  const post_id = (ctx.scene.state.post_id = (
+    await ctx.telegram.sendMessage(
+      -1001503737085,
+      ctx.getTitle("APPOINTMENT_TOTAL", [
+        city,
+        branch,
+        description,
+        price,
+        is_payed ? "Да" : "Нет",
+        timeout,
+      ]),
+      createKeyboard({ name: "i_gets", args: [appointment_id] }, ctx)
+    )
+  )?.message_id);
+
+  const connection = await tOrmCon;
+
+  connection
+    .query("update appointments set post_id = $1 where id = $2", [
+      post_id,
+      appointment_id,
+    ])
+    .catch(console.log);
+
+  ctx.telegram.sendMessage(
+    296846972,
+    ctx.getTitle("APPOINTMENT_TOTAL", [
+      city,
+      branch,
+      description,
+      price,
+      is_payed ? "Да" : "Нет",
+      timeout,
+    ]),
+
+    createKeyboard(
+      { name: "drop_get_ap_keyboard", args: [appointment_id] },
+      ctx
+    )
+  );
+
+  ctx.wizard.selectStep(0);
+}
 
 module.exports = clientScene;

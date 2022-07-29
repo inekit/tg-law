@@ -91,10 +91,10 @@ scene.action(/^rate_(.+)$/g, async (ctx) => {
   const connection = await tOrmCon;
 
   await connection
-    .query("update appointments set worker_rate = $1 where id  = $2", [
-      rate,
-      ctx.scene.state.order_id,
-    ])
+    .query(
+      "update appointments set worker_rate = $1, status='finished' where id  = $2",
+      [rate, ctx.scene.state.order_id]
+    )
     .then(async (r) => {
       await ctx.replyWithTitle("RATE_SET");
       await ctx.scene.enter("clientScene");

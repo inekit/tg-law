@@ -16,6 +16,7 @@ const mainStage = new Stage(
     require("./scenes/adminScene"),
     require("./scenes/adminScenes/appointmentAdminScene"),
     require("./scenes/adminScenes/lawyersScene"),
+    require("./scenes/adminScenes/paymentsScene"),
 
     require("./scenes/clientScenes/appointmentsScene"),
   ],
@@ -67,14 +68,20 @@ stages.action(/^get_appointment_(.+)$/g, async (ctx) => {
   const connection = await tOrmCon;
 
   const res = await connection
-    .query("insert into answers (lawyer_id, appointment_id) values ($1, $2)", [
-      ctx.from.id,
-      ctx.match[1],
-    ])
+    .query(
+      `insert into answers (lawyer_id, appointment_id) select $1 as lawyer_id, $2 as appointment_id
+      from lawyers l, appointments a where ((l.phone_number is not null and a.is_payed = true) or a.is_payed = false) and a.id=$2 limit 1 returning id`,
+      [ctx.from.id, ctx.match[1]]
+    )
     .then((res) => {
-      ctx.answerCbQuery(ctx.getTitle("YOU_ANSWERED")).catch(console.log);
+      if (res?.[0]?.id)
+        ctx.answerCbQuery(ctx.getTitle("YOU_ANSWERED")).catch(console.log);
+      else
+        ctx
+          .answerCbQuery(ctx.getTitle("YOU_ARE_NOT_REGISTERED"))
+          .catch(console.log);
     })
-    .catch((e) => {
+    .catch(async (e) => {
       if (e.code == 23505)
         return ctx.answerCbQuery(ctx.getTitle("YOU_ALREADY_ANSWERED"));
 
@@ -91,9 +98,10 @@ stages.action(/^get_appointment_(.+)$/g, async (ctx) => {
             .catch(console.log);
         });
 
-      connection
+      const res = await connection
         .query(
-          "insert into answers (lawyer_id, appointment_id) values ($1, $2)",
+          `insert into answers (lawyer_id, appointment_id) select $1 as lawyer_id, $2 as appointment_id
+          from lawyers l, appointments a where ((l.phone_number is not null and a.is_payed = true) or a.is_payed = false) and a.id=$2 limit 1`,
           [ctx.from.id, ctx.match[1]]
         )
         .catch(async (e) => {
@@ -102,6 +110,13 @@ stages.action(/^get_appointment_(.+)$/g, async (ctx) => {
             .answerCbQuery(ctx.getTitle("YOU_NOT_ANSWERED"))
             .catch(console.log);
         });
+
+      if (res?.[0]?.id)
+        ctx.answerCbQuery(ctx.getTitle("YOU_ANSWERED")).catch(console.log);
+      else
+        ctx
+          .answerCbQuery(ctx.getTitle("YOU_ARE_NOT_REGISTERED"))
+          .catch(console.log);
     });
 });
 

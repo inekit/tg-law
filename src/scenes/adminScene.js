@@ -41,6 +41,11 @@ adminScene.action("appointments", (ctx) => {
   ctx.scene.enter("appointmentAdminScene");
 });
 
+adminScene.action("payments", (ctx) => {
+  ctx.answerCbQuery().catch(console.log);
+  ctx.scene.enter("paymentsScene");
+});
+
 adminScene.action("lawyers", (ctx) => {
   ctx.answerCbQuery().catch(console.log);
   ctx.scene.enter("lawyersScene");

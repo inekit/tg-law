@@ -4,16 +4,20 @@ const callbackButton = Markup.button.callback;
 const urlButton = Markup.button.url;
 const { inlineKeyboard } = Markup;
 
-exports.new_appointment_keyboard = (ctx, a_count) => {
+exports.new_appointment_keyboard = (ctx, a_count, f_count) => {
   const keyboard = inlineKeyboard(
     [callbackButton(ctx.getTitle("BUTTON_NEW_APPOINTMENT"), "new_appointment")],
     { columns: 1 }
   );
 
-  console.log(a_count);
   if (a_count > 0)
     keyboard.reply_markup.inline_keyboard.push([
       callbackButton(ctx.getTitle("BUTTON_APPOINTMENTS"), "appointments"),
+    ]);
+
+  if (f_count > 0)
+    keyboard.reply_markup.inline_keyboard.push([
+      callbackButton(ctx.getTitle("BUTTON_FINISHED_A"), "finished"),
     ]);
 
   return keyboard;
@@ -52,9 +56,22 @@ exports.check_enter_keyboard = (ctx) => {
   return keyboard;
 };
 
+exports.i_paid_keyboard = (ctx, id) => {
+  return inlineKeyboard([
+    callbackButton(ctx.getTitle("I_PAID"), "i_paid_" + id),
+  ]);
+};
+
 exports.appointment_finish_kb = (ctx, id) => {
   return inlineKeyboard([
     callbackButton(ctx.getTitle("FINISH"), "finish_" + id),
+  ]);
+};
+
+exports.pay_link_kb = (ctx, link) => {
+  return inlineKeyboard([
+    [urlButton("Оплатить", link)],
+    [callbackButton(ctx.getTitle("I_PAID_A"), "i_paid_a")],
   ]);
 };
 
@@ -109,6 +126,7 @@ exports.admin_main_keyboard = (ctx) => {
     [
       callbackButton(ctx.getTitle("APPOINTMENTS"), "appointments"),
       callbackButton(ctx.getTitle("LAWYERS"), "lawyers"),
+      callbackButton(ctx.getTitle("PAYMENTS"), "payments"),
     ],
     { columns: 2 }
   );

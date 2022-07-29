@@ -146,7 +146,7 @@ scene.action(/^worker_(.+)$/g, async (ctx) => {
 
   await connection
     .query(
-      "update appointments set worker_id = $1 where id  = $2 returning *",
+      "update appointments set worker_id = $1 , status = 'workerset' where id  = $2 returning *",
       [lawyer_id, ctx.wizard.state.appointment_id]
     )
     .then(async (res) => {
