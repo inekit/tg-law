@@ -39,7 +39,7 @@ console.log("started");
       cert: fs.readFileSync("/etc/ssl/certs/rootCA.crt"),
       ca: [
         // This is necessary only if the client uses a self-signed certificate.
-        fs.readFileSync(`/etc/ssl/certs/${SERVER_URI}.crt`),
+        fs.readFileSync(`/etc/ssl/certs/${process.env.SERVER_URI}.crt`),
       ],
     };
 
