@@ -7,6 +7,7 @@ const port = 80;
 const params = new URLSearchParams();
 params.append("a", 1);
 const tOrmCon = require("../db/connection");
+require("dotenv").config();
 
 async function getPaymentLink(order_id) {
   const response = await axios.post(
@@ -44,8 +45,9 @@ app.post("/recieve", async (req, res) => {
   res.send("SUCCESS");
 });
 
-/*app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
-*/
+if (process.env.NODE_ENV === "production")
+  app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`);
+  });
+
 module.exports = getPaymentLink;
