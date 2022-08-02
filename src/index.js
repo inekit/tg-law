@@ -5,6 +5,7 @@ const middlewares = require("telegraf-steps-engine/middlewares/middlewares");
 
 const allowed_updates = ["message", "callback_query", "chat_member"];
 const TOKEN = process.env.BOT_TOKEN;
+const fs = require("fs");
 
 const bot = new Telegraf(TOKEN);
 
