@@ -15,6 +15,8 @@ const mainStage = new Stage(
     require("./scenes/lawyerScene"),
     require("./scenes/adminScene"),
     require("./scenes/adminScenes/appointmentAdminScene"),
+    require("./scenes/lawyerScenes/appointmentsScene"),
+
     require("./scenes/adminScenes/lawyersScene"),
     require("./scenes/adminScenes/paymentsScene"),
 
@@ -118,6 +120,43 @@ stages.action(/^get_appointment_(.+)$/g, async (ctx) => {
           .answerCbQuery(ctx.getTitle("YOU_ARE_NOT_REGISTERED"))
           .catch(console.log);
     });
+});
+
+stages.on("forward_date", async (ctx, next) => {
+  const chat_id = ctx.message.forward_from_chat.id;
+  const message_id = ctx.message.forward_from_message_id;
+  const from_id = ctx.message.from.id;
+  console.log(chat_id, message_id);
+
+  if (chat_id != process.env.CHANNEL_ID) return;
+
+  const connection = await tOrmCon;
+
+  const isLawyer =
+    (
+      await connection
+        .query(
+          "select * from lawyers where id = $1 and verification_status = 'verified'",
+          [from_id]
+        )
+        .catch(console.error)
+    )?.length > 0;
+
+  if (!isLawyer) return;
+
+  const {
+    id: appointment_id,
+    latitude,
+    longitude,
+  } = (
+    await connection
+      .query("select * from appointments where post_id = $1", [message_id])
+      .catch(console.error)
+  )?.[0];
+
+  await ctx.replyWithTitle("VERIFIED_APP_DATA", [appointment_id]);
+
+  if (latitude && longitude) await ctx.replyWithLocation(latitude, longitude);
 });
 
 module.exports = stages;

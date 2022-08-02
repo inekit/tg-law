@@ -9,21 +9,32 @@ const clientScene = require("../mainScene");
 require("dotenv").config();
 
 const scene = new CustomWizardScene("appointmentsScene").enter(async (ctx) => {
-  const { edit, order_id } = ctx.scene.state;
+  const { edit, order_id, type } = ctx.scene.state;
 
   if (order_id) return ctx.replyWithKeyboard("CHOOSE_RATE", "rate_keyboard");
 
   const connection = await tOrmCon;
 
-  const orders = (ctx.scene.state.appointments = await connection
-    .query(
-      "SELECT * from appointments where worker_rate is null and customer_id = $1",
-      [ctx.from.id]
-    )
-    .catch((e) => {
-      ctx.replyWithTitle("DB_ERROR");
-      console.log(e);
-    }));
+  const orders =
+    type === "issued"
+      ? (ctx.scene.state.appointments = await connection
+          .query(
+            "SELECT * from appointments where worker_rate is null and customer_id = $1",
+            [ctx.from.id]
+          )
+          .catch((e) => {
+            ctx.replyWithTitle("DB_ERROR");
+            console.log(e);
+          }))
+      : await connection
+          .query(
+            "SELECT * from appointments where worker_id is not null and customer_id = $1 and status <> 'finished'",
+            [ctx.from.id]
+          )
+          .catch((e) => {
+            ctx.replyWithTitle("DB_ERROR");
+            console.log(e);
+          });
 
   if (!orders?.length) {
     return await ctx.scene.enter("mainScene");
@@ -63,7 +74,7 @@ scene.action(/^cancel_(.+)$/g, async (ctx) => {
       console.log(post_id);
 
       await ctx.telegram
-        .deleteMessage(process.env.CHANNEL_ID, post_id) 
+        .deleteMessage(process.env.CHANNEL_ID, post_id)
         .catch(console.log);
 
       await ctx.replyWithTitle("APPOINTMENT_CANCELLED");
@@ -93,11 +104,28 @@ scene.action(/^rate_(.+)$/g, async (ctx) => {
 
   await connection
     .query(
-      "update appointments set worker_rate = $1, status='finished' where id  = $2",
+      `update appointments set worker_rate = $1, status='finished' where id  = $2 returning worker_id`,
       [rate, ctx.scene.state.order_id]
     )
     .then(async (r) => {
+      const worker_id = r?.[0]?.[0]?.worker_id;
+
+      await connection
+        .query(
+          `update lawyers set rate = case when rate is null then $1 else ((rate * rate_count) + $1)/(rate_count+1) end, rate_count=rate_count+1 where id  = $2`,
+          [rate, worker_id]
+        )
+        .catch(console.log);
+
       await ctx.replyWithTitle("RATE_SET");
+      await ctx.telegram.sendMessage(
+        worker_id,
+        ctx.getTitle("YOU_RATED", [
+          ctx.from.username,
+          ctx.scene.state.order_id,
+          rate,
+        ])
+      );
       await ctx.scene.enter("clientScene");
     })
     .catch(async (e) => {

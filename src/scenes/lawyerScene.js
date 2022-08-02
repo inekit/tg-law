@@ -12,7 +12,10 @@ async function getUser(ctx) {
   const connection = await tOrmCon;
 
   let userObj = await connection
-    .query(`SELECT * from lawyers l where id = $1 limit 1;`, [ctx.from?.id])
+    .query(
+      `SELECT l.id, username, a.id has_app, verification_status from lawyers l left join appointments a on a.worker_id = l.id where l.id = $1 limit 1;`,
+      [ctx.from?.id]
+    )
     .catch((e) => {
       console.log(e);
       ctx.replyWithTitle("DB_ERROR");
@@ -45,18 +48,22 @@ const clientScene = new CustomWizardScene("lawyerScene")
       userObj?.verification_status === "created" ||
       !userObj?.verification_status
     )
-      await ctx.replyWithKeyboard(
-        ctx.getTitle("GREETING_LAWYER"),
-        "register_lawyer_keyboard"
-      );
+      await ctx.replyWithKeyboard(ctx.getTitle("GREETING_LAWYER"), {
+        name: "register_lawyer_keyboard",
+        args: [userObj?.has_app],
+      });
     else if (userObj?.verification_status !== "verified")
-      await ctx.replyWithKeyboard(
-        ctx.getTitle("MAIN_MENU_LAWYER"),
-        "register_lawyer_keyboard"
-      );
+      await ctx.replyWithKeyboard(ctx.getTitle("MAIN_MENU_LAWYER"), {
+        name: "register_lawyer_keyboard",
+        args: [userObj?.has_app],
+      });
     else {
-      await ctx.replyWithTitle(ctx.getTitle("MAIN_MENU_LAWYER_VERIFIED"));
-      ctx.scene.enter("mainScene");
+      userObj?.has_app
+        ? await ctx.replyWithKeyboard(
+            ctx.getTitle("MAIN_MENU_LAWYER_VERIFIED"),
+            "lawyer_orders_keyboard"
+          )
+        : await ctx.replyWithTitle(ctx.getTitle("MAIN_MENU_LAWYER_VERIFIED"));
     }
   })
   .addSelect({
@@ -192,4 +199,12 @@ clientScene.action("next", async (ctx) => {
 
   ctx.replyNextStep(true);
 });
+
+clientScene.action("get_orders", async (ctx) => {
+  ctx.answerCbQuery().catch(console.log);
+  console.log(34344343);
+
+  await ctx.scene.enter("appointmentsLawyerScene");
+});
+
 module.exports = clientScene;

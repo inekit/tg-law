@@ -1,5 +1,6 @@
 const {
   Scenes: { BaseScene },
+  Composer,
 } = require("telegraf");
 
 const { CustomWizardScene, createKeyboard } = require("telegraf-steps-engine");
@@ -146,6 +147,30 @@ const clientScene = new CustomWizardScene("clientScene")
       ]);
     },
   })
+  .addStep({
+    variable: "location",
+    handler: (() => {
+      const c = new Composer();
+
+      c.on("location", async (ctx) => {
+        ctx.wizard.state.longitude = ctx.message.location.longitude;
+        ctx.wizard.state.latitude = ctx.message.location.latitude;
+        await ctx.replyWithHTML(".", {
+          reply_markup: { remove_keyboard: true },
+        });
+        ctx.replyNextStep();
+      });
+
+      c.hears(titles.getValues("BUTTON_SKIP"), async (ctx) => {
+        await ctx.replyWithHTML(".", {
+          reply_markup: { remove_keyboard: true },
+        });
+        ctx.replyNextStep();
+      });
+
+      return c;
+    })(),
+  })
   .addSelect({
     variable: "timeout",
     options: { HOUR: "60", "3H": "180" },
@@ -215,13 +240,13 @@ const clientScene = new CustomWizardScene("clientScene")
 clientScene.action("appointments", (ctx) => {
   ctx.answerCbQuery().catch(console.log);
 
-  ctx.scene.enter("appointmentsScene");
+  ctx.scene.enter("appointmentsScene", { type: "issued" });
 });
 
 clientScene.action("finished", (ctx) => {
   ctx.answerCbQuery().catch(console.log);
 
-  ctx.scene.enter("appointmentsScene");
+  ctx.scene.enter("appointmentsScene", { type: "finished" });
 });
 
 clientScene.command("review", (ctx) => ctx.scene.enter("reviewScene"));
@@ -235,13 +260,27 @@ clientScene.action("next", async (ctx) => {
   ctx.answerCbQuery().catch(console.log);
   const connection = await tOrmCon;
 
-  if (ctx.wizard.cursor === 7) {
-    const { price, description, branch, city, timeout, is_payed } =
-      ctx.wizard.state ?? {};
+  if (ctx.wizard.cursor === 5) {
+    ctx.wizard.selectStep(6);
+    return ctx.replyWithKeyboard("ENTER_LOCATION", "location_keyboard");
+  }
+  if (ctx.wizard.cursor === 8) {
+    const {
+      price,
+      description,
+      branch,
+      city,
+      timeout,
+      is_payed,
+      latitude,
+      longitude,
+    } = ctx.wizard.state ?? {};
 
     connection
       .query(
-        "insert into appointments (customer_id, city, branch, description, price, timeout,is_payed, status) values ($1,$2,$3,$4,$5,$6,$7,$8) returning id",
+        `insert into appointments 
+         (customer_id, city, branch, description, price, timeout,is_payed, status, latitude, longitude)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning id`,
         [
           ctx.from.id,
           city,
@@ -251,6 +290,8 @@ clientScene.action("next", async (ctx) => {
           timeout,
           is_payed,
           is_payed ? "issued" : "paid",
+          latitude,
+          longitude,
         ]
       )
       .then(async (res) => {

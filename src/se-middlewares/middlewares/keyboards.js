@@ -21,6 +21,13 @@ exports.custom_bottom_keyboard = (ctx, bNames, columns = 2) => {
   return k;
 };
 
+exports.location_keyboard = (ctx) => {
+  return Markup.keyboard([
+    [Markup.button.locationRequest(ctx.getTitle("SEND_TITLE_BUTTON"))],
+    [ctx.getTitle("BUTTON_SKIP")],
+  ]).resize();
+};
+
 exports.custom_botkeyboard = (ctx, registered) => {
   const buttons = [
     [ctx.getTitle("BUTTON_ORDERS"), ctx.getTitle("BUTTON_CLIENTS")],

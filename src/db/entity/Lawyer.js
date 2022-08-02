@@ -28,5 +28,7 @@ module.exports = new EntitySchema({
       nullable: false,
       default: "created",
     },
+    rate: { type: "double precision", nullable: true },
+    rate_count: { type: "int", default: 0 },
   },
 });

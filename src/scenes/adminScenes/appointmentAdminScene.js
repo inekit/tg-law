@@ -151,25 +151,43 @@ scene.action(/^worker_(.+)$/g, async (ctx) => {
       [lawyer_id, ctx.wizard.state.appointment_id]
     )
     .then(async (res) => {
-      const { customer_id, city, id, branch, description, price } =
+      const { customer_id, city, id, branch, description, price, is_payed } =
         res?.[0]?.[0] ?? {};
       await ctx.answerCbQuery("WORKER_SET").catch(console.log);
       await ctx.scene.enter("adminScene");
+
+      const customer = (
+        await connection
+          .query("select * from users where id = $1", [customer_id])
+          .catch(console.log)
+      )?.[0];
 
       await ctx.telegram
         .sendMessage(
           lawyer_id,
           ctx.getTitle("NEW_APPOINTMENT_LAWYER", [
+            id,
             city,
             branch,
             description,
             price,
+            is_payed ? "Да" : "Нет",
+            customer?.username ?? customer_id,
           ])
         )
         .catch(console.log);
 
+      const un = await ctx.telegram
+        .getChatMember(lawyer_id, lawyer_id)
+        .catch(console.log);
+
+      console.log(un);
+
       await ctx.telegram
-        .sendMessage(customer_id, ctx.getTitle("LAWYER_FOUND"))
+        .sendMessage(
+          customer_id,
+          ctx.getTitle("LAWYER_FOUND", [un?.user?.username ?? lawyer_id])
+        )
         .catch(console.log);
     })
     .catch(async (e) => {

@@ -26,38 +26,42 @@ console.log("started");
     stages
   );
 
-  await bot.launch({
-    allowedUpdates: allowed_updates,
-    dropPendingUpdates: true,
-  });
+  if (process.env.NODE_ENV === "production") {
+    bot.catch(console.error);
 
-  //new Cron(ctx)
+    const secretPath = `/telegraf/${bot.secretPathComponent()}`;
 
-  /*
-    if (process.env.NODE_ENV === "production") {
-        bot.catch(console.error);
+    console.log(secretPath);
 
-        await bot.startWebhook(`/bot`,
-            `/${TOKEN}`, {
-                key: readFileSync("./key.pem"),
-                cert: readFileSync("./cert.pem"),
-            },
-            8443
-        );
-        console.log('webhook is started')
+    const tlsOptions = {
+      key: fs.readFileSync("/etc/ssl/certs/rootCA.key"),
+      cert: fs.readFileSync("/etc/ssl/certs/rootCA.crt"),
+      ca: [
+        // This is necessary only if the client uses a self-signed certificate.
+        fs.readFileSync("/etc/ssl/certs/85.193.80.59.crt"),
+      ],
+    };
 
-        /*const r = await bot.telegram.setWebhook(
-           `https://${process.env.SERVER_IP}:8443/${TOKEN}`,
-           {
-             certificate: { source: "./cert.pem" },
-             ip_address: process.env.SERVER_IP,
-             allowed_updates,
-             drop_pending_updates: true,
-           }
-         );
-         console.log('webhook is set')'
-    }
-    */
+    bot.telegram
+      .setWebhook(`${process.env.SERVER_URI}${secretPath}`, {
+        certificate: { source: fs.readFileSync("/etc/ssl/certs/rootCA.crt") },
+        allowed_updates,
+        drop_pending_updates: true,
+      })
+      .then((r) => {
+        console.log(r);
+      });
+
+    //    console.log(await ctx.telegram.getWebhookInfo());
+    await bot.startWebhook(secretPath, tlsOptions, 443);
+
+    console.log(await ctx.telegram.getWebhookInfo());
+  } else {
+    await bot.launch({
+      allowedUpdates: allowed_updates,
+      dropPendingUpdates: true,
+    });
+  }
 })();
 
 process.once("SIGINT", () => bot.stop("SIGINT"));

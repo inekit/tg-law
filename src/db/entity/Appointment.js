@@ -60,6 +60,8 @@ module.exports = new EntitySchema({
       nullable: false,
       default: "paid",
     },
+    latitude: { type: "varchar", length: 255, nullable: true },
+    longitude: { type: "varchar", length: 255, nullable: true },
   },
   relations: {
     customer: {

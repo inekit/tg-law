@@ -2,6 +2,7 @@ const { Markup } = require("telegraf");
 
 const callbackButton = Markup.button.callback;
 const urlButton = Markup.button.url;
+const locationButton = Markup.button.locationRequest;
 const { inlineKeyboard } = Markup;
 
 exports.new_appointment_keyboard = (ctx, a_count, f_count) => {
@@ -35,9 +36,21 @@ exports.appointsments_keyboard = (ctx, app) => {
   return k;
 };
 
-exports.register_lawyer_keyboard = (ctx) => {
+exports.register_lawyer_keyboard = (ctx, ordersCount) => {
   const keyboard = inlineKeyboard(
-    [callbackButton(ctx.getTitle("BUTTON_REGISTER_LAWYER"), "register")],
+    [
+      [callbackButton(ctx.getTitle("BUTTON_REGISTER_LAWYER"), "register")],
+      [callbackButton(ctx.getTitle("BUTTON_ORDERS_LAWYER"), "get_orders")],
+    ],
+    { columns: 2 }
+  );
+
+  return keyboard;
+};
+
+exports.lawyer_orders_keyboard = (ctx) => {
+  const keyboard = inlineKeyboard(
+    [callbackButton(ctx.getTitle("BUTTON_ORDERS_LAWYER"), "get_orders")],
     { columns: 1 }
   );
 
@@ -169,7 +182,7 @@ exports.choose_worker_keyboard = (ctx, workers) => {
     console.log(id, fio, rate);
     k.reply_markup.inline_keyboard.push([
       callbackButton(
-        `${fio ?? "Аноним"} ${rate ?? "без оцен."}`,
+        `${fio ?? "Аноним"} ${rate?.toFixed(1) ?? "без оцен."}`,
         "worker_" + id
       ),
     ]);
@@ -205,14 +218,26 @@ exports.orders_reviews_keyboard = (ctx, orders) => {
   return k;
 };
 
+exports.orders_lawyer_keyboard = (ctx, orders) => {
+  let k = inlineKeyboard([]);
+
+  orders.forEach(({ description, id }) => {
+    k.reply_markup.inline_keyboard.push([
+      callbackButton(description ?? "  ", "order_" + id),
+    ]);
+  });
+
+  return k;
+};
+
 exports.rate_keyboard = (ctx) => {
   const keyboard = inlineKeyboard(
     [
-      callbackButton("1", "rate_1"),
-      callbackButton("2", "rate_2"),
-      callbackButton("3", "rate_3"),
-      callbackButton("4", "rate_4"),
-      callbackButton("5", "rate_5"),
+      callbackButton("⭐", "rate_1"),
+      callbackButton("⭐⭐", "rate_2"),
+      callbackButton("⭐⭐⭐", "rate_3"),
+      callbackButton("⭐⭐⭐⭐", "rate_4"),
+      callbackButton("⭐⭐⭐⭐⭐", "rate_5"),
     ],
     { columns: 1 }
   );

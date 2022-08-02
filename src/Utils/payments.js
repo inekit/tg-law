@@ -44,8 +44,8 @@ app.post("/recieve", async (req, res) => {
   res.send("SUCCESS");
 });
 
-app.listen(port, () => {
+/*app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
+*/
 module.exports = getPaymentLink;
