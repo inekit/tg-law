@@ -1,12 +1,14 @@
 const {
   Scenes: { BaseScene },
 } = require("telegraf");
+const ADMIN_ID = process.env.ADMIN_ID;
 
 const scene = new BaseScene("mainScene").enter(async (ctx) => {
-  await ctx.replyWithKeyboard(
-    ctx.getTitle("GREETING_MAIN"),
-    "main_menu_keyboard"
-  );
+  const isAdmin = ctx.from.id == ADMIN_ID;
+  await ctx.replyWithKeyboard(ctx.getTitle("GREETING_MAIN"), {
+    name: "main_menu_keyboard",
+    args: [isAdmin],
+  });
 });
 
 scene.action("enter_lawyer", (ctx) => {

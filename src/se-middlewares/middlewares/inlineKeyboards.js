@@ -121,16 +121,19 @@ exports.drop_get_ap_keyboard = (ctx, id) => {
   return keyboard;
 };
 
-exports.main_menu_keyboard = (ctx) => {
+exports.main_menu_keyboard = (ctx, isAdmin) => {
   const keyboard = inlineKeyboard(
     [
       callbackButton(ctx.getTitle("CLIENT_SCENE"), "enter_client"),
       callbackButton(ctx.getTitle("LAWYER_SCENE"), "enter_lawyer"),
-      callbackButton(ctx.getTitle("ADMIN_SCENE"), "enter_admin"),
     ],
     { columns: 3 }
   );
 
+  if (isAdmin)
+    keyboard.reply_markup.inline_keyboard.push([
+      callbackButton(ctx.getTitle("ADMIN_SCENE"), "enter_admin"),
+    ]);
   return keyboard;
 };
 
